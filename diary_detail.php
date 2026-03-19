@@ -1,4 +1,10 @@
 <?php
+/**
+ * 役割:
+ * - 日誌の詳細表示ページ
+ * - 日誌削除処理を実行
+ * - 編集・一覧ページへの導線を表示
+ */
 require_once __DIR__ . '/includes/functions.php';
 require_login();
 

@@ -1,4 +1,10 @@
 <?php
+/**
+ * 役割:
+ * - 日誌の一覧表示ページ
+ * - 日付 / 作物 / 圃場で検索
+ * - 詳細・編集ページへの導線を表示
+ */
 require_once __DIR__ . '/includes/functions.php';
 require_login();
 
