@@ -174,13 +174,17 @@ td {
 th { font-size: 0.92rem; color: #425248; }
 
 .diary-table th:nth-child(1),
-.diary-table td:nth-child(1) { width: 120px; }
+.diary-table td:nth-child(1) { width: 110px; }
 .diary-table th:nth-child(2),
 .diary-table td:nth-child(2),
 .diary-table th:nth-child(3),
-.diary-table td:nth-child(3) { width: 100px; }
-.diary-table th:nth-child(5),
-.diary-table td:nth-child(5) { width: 140px; }
+.diary-table td:nth-child(3),
+.diary-table th:nth-child(4),
+.diary-table td:nth-child(4) { width: 100px; }
+.diary-table th:nth-child(6),
+.diary-table td:nth-child(6) { width: 140px; }
+.diary-table th:nth-child(7),
+.diary-table td:nth-child(7) { width: 190px; }
 
 .cell-note {
   display: -webkit-box;
