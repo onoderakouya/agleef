@@ -25,6 +25,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
       <?php if (is_logged_in()): ?>
         <span class="badge">こんにちは、<?= e(current_user_name()) ?> さん</span>
         <a class="btn small" href="dashboard.php">ダッシュボード</a>
+        <a class="btn small" href="diary_list.php">日誌一覧</a>
         <a class="btn small danger" href="logout.php">ログアウト</a>
       <?php else: ?>
         <a class="btn small primary" href="login.php">ログイン</a>
