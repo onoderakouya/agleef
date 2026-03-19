@@ -22,7 +22,28 @@ INSERT INTO fields (user_id, name) VALUES
 ((SELECT id FROM users WHERE username = 'hanako'), '南側ハウス');
 
 -- 日誌サンプル
-INSERT INTO diaries (user_id, work_date, weather, work_content) VALUES
-((SELECT id FROM users WHERE username = 'demo'), date('now', '-2 day'), '晴れ', 'トマトの誘引作業を実施'),
-((SELECT id FROM users WHERE username = 'demo'), date('now', '-1 day'), '曇り', '圃場の除草と潅水を実施'),
-((SELECT id FROM users WHERE username = 'hanako'), date('now'), '雨', 'ハウス内の点検と追肥を実施');
+INSERT INTO diaries (user_id, crop_id, field_id, work_date, weather, work_content) VALUES
+(
+  (SELECT id FROM users WHERE username = 'demo'),
+  (SELECT id FROM crops WHERE user_id = (SELECT id FROM users WHERE username = 'demo') AND name = 'トマト'),
+  (SELECT id FROM fields WHERE user_id = (SELECT id FROM users WHERE username = 'demo') AND name = '1号ハウス'),
+  date('now', '-2 day'),
+  '晴れ',
+  'トマトの誘引作業を実施'
+),
+(
+  (SELECT id FROM users WHERE username = 'demo'),
+  (SELECT id FROM crops WHERE user_id = (SELECT id FROM users WHERE username = 'demo') AND name = 'ピーマン'),
+  (SELECT id FROM fields WHERE user_id = (SELECT id FROM users WHERE username = 'demo') AND name = '2号ハウス'),
+  date('now', '-1 day'),
+  '曇り',
+  '圃場の除草と潅水を実施'
+),
+(
+  (SELECT id FROM users WHERE username = 'hanako'),
+  (SELECT id FROM crops WHERE user_id = (SELECT id FROM users WHERE username = 'hanako') AND name = 'いちご'),
+  (SELECT id FROM fields WHERE user_id = (SELECT id FROM users WHERE username = 'hanako') AND name = '南側ハウス'),
+  date('now'),
+  '雨',
+  'ハウス内の点検と追肥を実施'
+);
