@@ -45,7 +45,8 @@ $pageTitle = '日誌一覧 | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
 <section class="card">
-  <h2>日誌一覧</h2>
+  <h2>日誌一覧（スマホ対応）</h2>
+  <p class="description">日付・作物・圃場で絞り込み、必要な情報だけを見やすく表示します。</p>
   <form method="get" class="filter-grid">
     <label>日付
       <input type="date" name="date" value="<?= e($filterDate) ?>">
@@ -75,7 +76,7 @@ include __DIR__ . '/includes/header.php';
 
 <section class="card">
   <div class="table-wrap">
-    <table>
+    <table class="diary-table">
       <thead>
         <tr><th>日付</th><th>作物</th><th>圃場</th><th>作業内容</th><th>操作</th></tr>
       </thead>
@@ -85,11 +86,11 @@ include __DIR__ . '/includes/header.php';
       <?php else: ?>
         <?php foreach ($diaries as $row): ?>
           <tr>
-            <td><?= e($row['date']) ?></td>
-            <td><?= e($row['crop_name'] ?? '-') ?></td>
-            <td><?= e($row['field_name'] ?? '-') ?></td>
-            <td><?= e($row['work_content']) ?></td>
-            <td>
+            <td data-label="日付"><?= e($row['date']) ?></td>
+            <td data-label="作物"><?= e($row['crop_name'] ?? '-') ?></td>
+            <td data-label="圃場"><?= e($row['field_name'] ?? '-') ?></td>
+            <td data-label="作業内容"><span class="cell-note"><?= e($row['work_content']) ?></span></td>
+            <td data-label="操作" class="actions-cell">
               <a class="btn small" href="diary_detail.php?id=<?= (int)$row['id'] ?>">詳細</a>
               <a class="btn small" href="diary_edit.php?id=<?= (int)$row['id'] ?>">編集</a>
             </td>
