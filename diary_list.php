@@ -1,102 +1,77 @@
 <?php
-/**
- * 役割:
- * - 日誌の一覧表示ページ
- * - 日付 / 作物 / 圃場で検索
- * - 詳細・編集ページへの導線を表示
- */
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/auth.php';
 require_login();
 
 $userId = current_user_id();
-$crops = get_user_crops($userId);
-$fields = get_user_fields($userId);
 
-$filterDate = trim($_GET['date'] ?? '');
-$filterCrop = (int)($_GET['crop_id'] ?? 0);
-$filterField = (int)($_GET['field_id'] ?? 0);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        set_flash('error', '不正なリクエストです。');
+        redirect('diary_list.php');
+    }
 
-$sql = 'SELECT d.id, d.date, d.work_content, c.name AS crop_name, f.name AS field_name
-        FROM diaries d
-        LEFT JOIN crops c ON c.id = d.crop_id
-        LEFT JOIN fields f ON f.id = d.field_id
-        WHERE d.user_id = :user_id';
-$params = [':user_id' => $userId];
+    $id = (int)($_POST['id'] ?? 0);
+    $delete = db()->prepare('DELETE FROM diaries WHERE id = :id AND user_id = :user_id');
+    $delete->execute([':id' => $id, ':user_id' => $userId]);
 
-if ($filterDate !== '') {
-    $sql .= ' AND d.date = :date';
-    $params[':date'] = $filterDate;
-}
-if ($filterCrop > 0) {
-    $sql .= ' AND d.crop_id = :crop_id';
-    $params[':crop_id'] = $filterCrop;
-}
-if ($filterField > 0) {
-    $sql .= ' AND d.field_id = :field_id';
-    $params[':field_id'] = $filterField;
+    set_flash('success', '日誌を削除しました。');
+    redirect('diary_list.php');
 }
 
-$sql .= ' ORDER BY d.date DESC, d.id DESC';
-$stmt = db()->prepare($sql);
-$stmt->execute($params);
+$stmt = db()->prepare(
+    'SELECT id, work_date, weather, work_content, created_at
+     FROM diaries
+     WHERE user_id = :user_id
+     ORDER BY work_date DESC, id DESC'
+);
+$stmt->execute([':user_id' => $userId]);
 $diaries = $stmt->fetchAll();
 
 $pageTitle = '日誌一覧 | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
 <section class="card">
-  <h2>日誌一覧（スマホ対応）</h2>
-  <p class="description">日付・作物・圃場で絞り込み、必要な情報だけを見やすく表示します。</p>
-  <form method="get" class="filter-grid">
-    <label>日付
-      <input type="date" name="date" value="<?= e($filterDate) ?>">
-    </label>
-    <label>作物
-      <select name="crop_id">
-        <option value="">すべて</option>
-        <?php foreach ($crops as $crop): ?>
-          <option value="<?= (int)$crop['id'] ?>" <?= $filterCrop === (int)$crop['id'] ? 'selected' : '' ?>><?= e($crop['name']) ?></option>
-        <?php endforeach; ?>
-      </select>
-    </label>
-    <label>圃場
-      <select name="field_id">
-        <option value="">すべて</option>
-        <?php foreach ($fields as $field): ?>
-          <option value="<?= (int)$field['id'] ?>" <?= $filterField === (int)$field['id'] ? 'selected' : '' ?>><?= e($field['name']) ?></option>
-        <?php endforeach; ?>
-      </select>
-    </label>
-    <div class="button-row">
-      <button class="primary" type="submit">検索</button>
-      <a class="btn" href="diary_list.php">リセット</a>
-    </div>
-  </form>
-</section>
+  <div class="button-row" style="justify-content: space-between; margin-top: 0;">
+    <h2 style="margin-bottom:0;">日誌一覧</h2>
+    <a class="btn primary" href="diary_create.php">＋ 新規登録</a>
+  </div>
+  <p class="description">ログイン中のユーザーの日誌のみ表示されます。</p>
 
-<section class="card">
   <div class="table-wrap">
     <table class="diary-table">
       <thead>
-        <tr><th>日付</th><th>作物</th><th>圃場</th><th>作業内容</th><th>操作</th></tr>
+        <tr>
+          <th>作業日</th>
+          <th>天気</th>
+          <th>作業内容</th>
+          <th>登録日時</th>
+          <th>操作</th>
+        </tr>
       </thead>
       <tbody>
-      <?php if (!$diaries): ?>
-        <tr><td colspan="5">該当する日誌がありません。</td></tr>
-      <?php else: ?>
-        <?php foreach ($diaries as $row): ?>
-          <tr>
-            <td data-label="日付"><?= e($row['date']) ?></td>
-            <td data-label="作物"><?= e($row['crop_name'] ?? '-') ?></td>
-            <td data-label="圃場"><?= e($row['field_name'] ?? '-') ?></td>
-            <td data-label="作業内容"><span class="cell-note"><?= e($row['work_content']) ?></span></td>
-            <td data-label="操作" class="actions-cell">
-              <a class="btn small" href="diary_detail.php?id=<?= (int)$row['id'] ?>">詳細</a>
-              <a class="btn small" href="diary_edit.php?id=<?= (int)$row['id'] ?>">編集</a>
-            </td>
-          </tr>
-        <?php endforeach; ?>
-      <?php endif; ?>
+        <?php if (!$diaries): ?>
+          <tr><td colspan="5">日誌がまだありません。</td></tr>
+        <?php else: ?>
+          <?php foreach ($diaries as $row): ?>
+            <tr>
+              <td data-label="作業日"><?= e($row['work_date']) ?></td>
+              <td data-label="天気"><?= e($row['weather'] ?: '-') ?></td>
+              <td data-label="作業内容"><?= nl2br(e($row['work_content'])) ?></td>
+              <td data-label="登録日時"><?= e($row['created_at']) ?></td>
+              <td data-label="操作" class="actions-cell">
+                <div class="inline-actions">
+                  <a class="btn small" href="diary_edit.php?id=<?= (int)$row['id'] ?>">編集</a>
+                  <form method="post" onsubmit="return confirm('この日誌を削除しますか？');">
+                    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                    <button class="btn small danger" type="submit">削除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>

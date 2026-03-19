@@ -24,6 +24,11 @@ function require_login(): void
     }
 }
 
+function current_user_id(): int
+{
+    return (int)($_SESSION['user_id'] ?? 0);
+}
+
 function current_user_name(): string
 {
     return $_SESSION['username'] ?? 'ゲスト';
@@ -47,4 +52,20 @@ function get_flash(string $type): ?string
     unset($_SESSION[$key]);
 
     return $message;
+}
+
+function csrf_token(): string
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function verify_csrf_token(?string $token): bool
+{
+    return is_string($token)
+        && isset($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
 }
