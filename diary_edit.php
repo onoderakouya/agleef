@@ -1,4 +1,9 @@
 <?php
+/**
+ * 役割:
+ * - 既存の日誌を編集するページ
+ * - 日誌情報の更新と写真差し替え/削除を処理
+ */
 require_once __DIR__ . '/includes/functions.php';
 require_login();
 
@@ -33,6 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        $cropCheck = db()->prepare('SELECT COUNT(*) FROM crops WHERE id = :id AND user_id = :user_id');
+        $cropCheck->execute([':id' => $cropId, ':user_id' => $userId]);
+        $fieldCheck = db()->prepare('SELECT COUNT(*) FROM fields WHERE id = :id AND user_id = :user_id');
+        $fieldCheck->execute([':id' => $fieldId, ':user_id' => $userId]);
+
+        if ((int)$cropCheck->fetchColumn() === 0 || (int)$fieldCheck->fetchColumn() === 0) {
+            throw new RuntimeException('作物または圃場の選択が不正です。');
+        }
+
         $newPhotoPath = $diary['photo_path'];
 
         if ($removePhoto && $newPhotoPath) {
