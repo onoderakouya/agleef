@@ -57,7 +57,8 @@ include __DIR__ . '/includes/header.php';
     <dt>圃場</dt><dd><?= e($diary['field_name'] ?? '-') ?></dd>
     <dt>天気</dt><dd><?= e((string)($diary['weather'] ?? '-')) ?></dd>
     <dt>作業内容</dt><dd><?= nl2br(e($diary['work_content'])) ?></dd>
-    <dt>登録日時</dt><dd><?= e($diary['created_at']) ?></dd>
+    <dt>作成日時</dt><dd><?= e($diary['created_at']) ?></dd>
+    <dt>更新日時</dt><dd><?= e($diary['updated_at'] ?? $diary['created_at']) ?></dd>
   </dl>
 
   <div class="button-row">
