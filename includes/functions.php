@@ -76,6 +76,25 @@ function verify_csrf_token(?string $token): bool
         && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+
+function get_query_param(string $key, string $default = ''): string
+{
+    $value = $_GET[$key] ?? $default;
+
+    if (is_array($value)) {
+        return $default;
+    }
+
+    return (string)$value;
+}
+
+function is_valid_date(string $value): bool
+{
+    $date = DateTime::createFromFormat('Y-m-d', $value);
+
+    return $date instanceof DateTime && $date->format('Y-m-d') === $value;
+}
+
 function get_user_crops(int $userId): array
 {
     $stmt = db()->prepare('SELECT id, name FROM crops WHERE user_id = :user_id ORDER BY name ASC');
