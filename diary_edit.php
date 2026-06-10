@@ -41,10 +41,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cropId = (string)($_POST['crop_id'] ?? '');
     $fieldId = (string)($_POST['field_id'] ?? '');
 
-    if (!$hasCrops || !$hasFields) {
-        set_flash('error', '先に作物と圃場を登録してください。');
-    } elseif ($workDate === '' || $workContent === '' || $cropId === '' || $fieldId === '') {
-        set_flash('error', '作業日・作物・圃場・作業内容は必須です。');
+    $errors = [];
+
+    if ($workDate === '') {
+        $errors[] = '作業日を入力してください。';
+    }
+    if (!$hasCrops) {
+        $errors[] = '先に作物を登録してください。';
+    } elseif ($cropId === '') {
+        $errors[] = '作物を選択してください。';
+    }
+    if (!$hasFields) {
+        $errors[] = '先に圃場を登録してください。';
+    } elseif ($fieldId === '') {
+        $errors[] = '圃場を選択してください。';
+    }
+    if ($workContent === '') {
+        $errors[] = '作業内容を入力してください。';
+    }
+
+    if ($errors) {
+        set_flash('error', implode(' ', $errors));
     } else {
         $cropCheck = db()->prepare('SELECT COUNT(*) FROM crops WHERE id = :id AND user_id = :user_id');
         $cropCheck->execute([':id' => (int)$cropId, ':user_id' => $userId]);
@@ -100,7 +117,7 @@ include __DIR__ . '/includes/header.php';
     </label>
 
     <label>作物 <span aria-hidden="true">*</span>
-      <select name="crop_id" required>
+      <select name="crop_id" required <?= !$hasCrops ? 'disabled' : '' ?>>
         <option value="">選択してください</option>
         <?php foreach ($crops as $crop): ?>
           <option value="<?= (int)$crop['id'] ?>" <?= (int)($diary['crop_id'] ?? 0) === (int)$crop['id'] ? 'selected' : '' ?>>
@@ -114,7 +131,7 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 
     <label>圃場 <span aria-hidden="true">*</span>
-      <select name="field_id" required>
+      <select name="field_id" required <?= !$hasFields ? 'disabled' : '' ?>>
         <option value="">選択してください</option>
         <?php foreach ($fields as $field): ?>
           <option value="<?= (int)$field['id'] ?>" <?= (int)($diary['field_id'] ?? 0) === (int)$field['id'] ? 'selected' : '' ?>>
