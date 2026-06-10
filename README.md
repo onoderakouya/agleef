@@ -10,7 +10,7 @@
   - Prepared Statement による SQLインジェクション対策
   - `htmlspecialchars` による XSS対策
   - CSRFトークン検証
-  - 画像アップロードのMIME/サイズ制限
+  - ログインユーザーの `user_id` によるデータ分離
 
 ## 2. ディレクトリ構成
 
@@ -21,13 +21,14 @@
       style.css
     /js
       app.js
-    /uploads
   /includes
     config.php
     db.php
-    functions.php
+    auth.php
     header.php
     footer.php
+  /migrations
+    20260319_add_crop_field_to_diaries.sql
   index.php
   login.php
   logout.php
@@ -69,14 +70,14 @@
 ### diaries
 - id (PK)
 - user_id (FK -> users)
-- date
-- crop_id (FK -> crops)
-- field_id (FK -> fields)
+- crop_id (FK -> crops, nullable / ON DELETE SET NULL)
+- field_id (FK -> fields, nullable / ON DELETE SET NULL)
+- work_date
+- weather
 - work_content
-- memo
-- photo_path
 - created_at
-- updated_at
+
+`crop_id` と `field_id` は、過去データを安全に残すためDB上は NULL 許容です。画面では新規作成・編集時に「作物」「圃場」を必須選択にしています。
 
 ## 4. セットアップ手順（ローカル）
 
@@ -98,16 +99,39 @@ php -S 0.0.0.0:8000
 - ユーザー名: `demo`
 - パスワード: `password`
 
-## 5. MVP機能
+## 5. 既存DBの migration 手順
+
+既存の `database.sqlite` に `diaries.crop_id` / `diaries.field_id` を追加する場合は、SQLite の外部キー制約追加の制限を避けるため、テーブルを作り直す migration を使います。
+
+1. 必ずバックアップを作成
+```bash
+cp database.sqlite database.sqlite.bak
+```
+
+2. migration を実行
+```bash
+sqlite3 database.sqlite < migrations/20260319_add_crop_field_to_diaries.sql
+```
+
+3. 外部キーとカラムを確認
+```bash
+sqlite3 database.sqlite "PRAGMA foreign_key_check;"
+sqlite3 database.sqlite "PRAGMA table_info(diaries);"
+```
+
+4. 既存日誌への作物・圃場設定
+- migration 直後の既存日誌は `crop_id` / `field_id` が `NULL` です。
+- ログイン後、日誌編集画面から作物・圃場を選択して更新してください。
+
+## 6. MVP機能
 - ログイン / ログアウト
 - 作物マスタ管理（登録・編集・削除）
 - 圃場管理（登録・編集・削除）
-- 日誌作成（写真1枚アップロード可）
-- 日誌一覧（新しい順）
-- 日誌検索（日期・作物・圃場）
+- 日誌作成（作業日・作物・圃場・天気・作業内容）
+- 日誌一覧（新しい順、作物名・圃場名を表示）
 - 日誌詳細表示
 - 日誌編集・削除
 
-## 6. 補足
-- `assets/uploads/` はWebサーバーから書き込み可能にしてください。
+## 7. 補足
+- `includes/db.php` は起動時に不足テーブルや古い `diaries` 構造を補正しますが、本番データでは事前バックアップ後に migration SQL を明示実行する運用を推奨します。
 - 本番運用ではHTTPS化、Cookie設定強化、バックアップ設計を追加してください。

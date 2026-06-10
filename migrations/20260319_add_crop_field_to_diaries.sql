@@ -1,3 +1,9 @@
+-- diaries に crop_id / field_id を追加し、SQLite でも外部キー制約を持つ形へ作り直す migration です。
+-- 対象: 既存の diaries が user_id / work_date / weather / work_content / created_at を持つDB。
+-- 注意: SQLite は ALTER TABLE ADD COLUMN で外部キー制約つきカラムを安全に追加しづらいため、
+--       テーブルを作り直して既存データをコピーします。
+-- 実行前に必ず database.sqlite をバックアップしてください。
+
 PRAGMA foreign_keys = OFF;
 BEGIN TRANSACTION;
 
@@ -15,6 +21,8 @@ CREATE TABLE diaries_new (
   FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE SET NULL
 );
 
+-- 既存日誌は過去データのため crop_id / field_id は NULL で引き継ぎます。
+-- 画面側では新規作成・編集時に作物と圃場を必須選択にしています。
 INSERT INTO diaries_new (id, user_id, crop_id, field_id, work_date, weather, work_content, created_at)
 SELECT
   id,
@@ -36,3 +44,7 @@ CREATE INDEX IF NOT EXISTS idx_diaries_field_id ON diaries(field_id);
 
 COMMIT;
 PRAGMA foreign_keys = ON;
+
+-- 確認用:
+-- PRAGMA foreign_key_check;
+-- PRAGMA table_info(diaries);
