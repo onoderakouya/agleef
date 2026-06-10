@@ -78,7 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      field_id = :field_id,
                      work_date = :work_date,
                      weather = :weather,
-                     work_content = :work_content
+                     work_content = :work_content,
+                     updated_at = CURRENT_TIMESTAMP
                  WHERE id = :id AND user_id = :user_id'
             );
             $update->execute([
