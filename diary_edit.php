@@ -72,28 +72,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ((int)$cropCheck->fetchColumn() === 0 || (int)$fieldCheck->fetchColumn() === 0) {
             set_flash('error', '選択した作物または圃場が不正です。再選択してください。');
         } else {
-            $update = db()->prepare(
-                'UPDATE diaries
-                 SET crop_id = :crop_id,
-                     field_id = :field_id,
-                     work_date = :work_date,
-                     weather = :weather,
-                     work_content = :work_content,
-                     updated_at = CURRENT_TIMESTAMP
-                 WHERE id = :id AND user_id = :user_id'
-            );
-            $update->execute([
-                ':crop_id' => (int)$cropId,
-                ':field_id' => (int)$fieldId,
-                ':work_date' => $workDate,
-                ':weather' => $weather !== '' ? $weather : null,
-                ':work_content' => $workContent,
-                ':id' => $id,
-                ':user_id' => $userId,
-            ]);
+            $oldPhotoPath = $diary['photo_path'] ?? null;
+            $newPhotoPath = null;
+            $deletePhoto = isset($_POST['delete_photo']);
 
-            set_flash('success', '日誌を更新しました。');
-            redirect('diary_list.php');
+            try {
+                $newPhotoPath = save_diary_photo($_FILES['photo'] ?? [], $userId);
+                $photoPath = $oldPhotoPath;
+
+                if ($newPhotoPath !== null) {
+                    $photoPath = $newPhotoPath;
+                } elseif ($deletePhoto) {
+                    $photoPath = null;
+                }
+
+                $update = db()->prepare(
+                    'UPDATE diaries
+                     SET crop_id = :crop_id,
+                         field_id = :field_id,
+                         work_date = :work_date,
+                         weather = :weather,
+                         work_content = :work_content,
+                         photo_path = :photo_path,
+                         updated_at = CURRENT_TIMESTAMP
+                     WHERE id = :id AND user_id = :user_id'
+                );
+                $update->execute([
+                    ':crop_id' => (int)$cropId,
+                    ':field_id' => (int)$fieldId,
+                    ':work_date' => $workDate,
+                    ':weather' => $weather !== '' ? $weather : null,
+                    ':work_content' => $workContent,
+                    ':photo_path' => $photoPath,
+                    ':id' => $id,
+                    ':user_id' => $userId,
+                ]);
+
+                if ($newPhotoPath !== null || $deletePhoto) {
+                    delete_diary_photo($oldPhotoPath);
+                }
+
+                set_flash('success', '日誌を更新しました。');
+                redirect('diary_list.php');
+            } catch (Throwable $e) {
+                delete_diary_photo($newPhotoPath);
+                if ($e instanceof RuntimeException) {
+                    set_flash('error', $e->getMessage());
+                } else {
+                    throw $e;
+                }
+            }
         }
     }
 
@@ -109,7 +137,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="card narrow">
   <h2>日誌編集</h2>
-  <form method="post" class="stack">
+  <form method="post" class="stack" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
     <input type="hidden" name="id" value="<?= (int)$diary['id'] ?>">
 
@@ -152,6 +180,26 @@ include __DIR__ . '/includes/header.php';
     <label>作業内容
       <textarea name="work_content" rows="5" required><?= e($diary['work_content']) ?></textarea>
     </label>
+
+    <div class="photo-edit-block">
+      <p class="form-label">写真</p>
+      <?php if (!empty($diary['photo_path'])): ?>
+        <div class="current-photo">
+          <p class="description">現在の写真</p>
+          <img class="diary-photo-preview" src="<?= e($diary['photo_path']) ?>" alt="現在の日誌写真">
+        </div>
+        <label class="checkbox-label">
+          <input type="checkbox" name="delete_photo" value="1">
+          現在の写真を削除する
+        </label>
+      <?php else: ?>
+        <p class="description">現在、写真は登録されていません。</p>
+      <?php endif; ?>
+      <label>新しい写真をアップロード
+        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+        <span class="description">任意項目です。JPG / JPEG / PNG / WEBP、最大3MBまでアップロードできます。新しい写真を選ぶと現在の写真は差し替わります。</span>
+      </label>
+    </div>
 
     <div class="button-row">
       <button class="primary" type="submit" <?= !$hasCrops || !$hasFields ? 'disabled' : '' ?>>更新</button>

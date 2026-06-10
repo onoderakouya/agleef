@@ -63,21 +63,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ((int)$cropCheck->fetchColumn() === 0 || (int)$fieldCheck->fetchColumn() === 0) {
             set_flash('error', '選択した作物または圃場が不正です。再選択してください。');
         } else {
-            $insert = db()->prepare(
-                'INSERT INTO diaries (user_id, crop_id, field_id, work_date, weather, work_content)
-                 VALUES (:user_id, :crop_id, :field_id, :work_date, :weather, :work_content)'
-            );
-            $insert->execute([
-                ':user_id' => $userId,
-                ':crop_id' => (int)$cropId,
-                ':field_id' => (int)$fieldId,
-                ':work_date' => $workDate,
-                ':weather' => $weather !== '' ? $weather : null,
-                ':work_content' => $workContent,
-            ]);
+            $photoPath = null;
 
-            set_flash('success', '日誌を登録しました。');
-            redirect('diary_list.php');
+            try {
+                $photoPath = save_diary_photo($_FILES['photo'] ?? [], $userId);
+
+                $insert = db()->prepare(
+                    'INSERT INTO diaries (user_id, crop_id, field_id, work_date, weather, work_content, photo_path)
+                     VALUES (:user_id, :crop_id, :field_id, :work_date, :weather, :work_content, :photo_path)'
+                );
+                $insert->execute([
+                    ':user_id' => $userId,
+                    ':crop_id' => (int)$cropId,
+                    ':field_id' => (int)$fieldId,
+                    ':work_date' => $workDate,
+                    ':weather' => $weather !== '' ? $weather : null,
+                    ':work_content' => $workContent,
+                    ':photo_path' => $photoPath,
+                ]);
+
+                set_flash('success', '日誌を登録しました。');
+                redirect('diary_list.php');
+            } catch (Throwable $e) {
+                delete_diary_photo($photoPath);
+                if ($e instanceof RuntimeException) {
+                    set_flash('error', $e->getMessage());
+                } else {
+                    throw $e;
+                }
+            }
         }
     }
 }
@@ -87,7 +101,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="card narrow">
   <h2>日誌登録</h2>
-  <form method="post" class="stack">
+  <form method="post" class="stack" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
 
     <label>作業日
@@ -128,6 +142,11 @@ include __DIR__ . '/includes/header.php';
 
     <label>作業内容
       <textarea name="work_content" rows="5" required><?= e($workContent) ?></textarea>
+    </label>
+
+    <label>写真
+      <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+      <span class="description">任意項目です。JPG / JPEG / PNG / WEBP、最大3MBまでアップロードできます。</span>
     </label>
 
     <div class="button-row">

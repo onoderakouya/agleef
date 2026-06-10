@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS diaries (
   work_date TEXT NOT NULL,
   weather TEXT,
   work_content TEXT NOT NULL,
+  photo_path TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

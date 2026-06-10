@@ -109,39 +109,118 @@ function get_user_fields(int $userId): array
     return $stmt->fetchAll();
 }
 
-function handle_photo_upload(array $file): ?string
+function get_upload_public_path(string $filename): string
 {
-    if (empty($file['name'])) {
-        return null;
+    return 'assets/uploads/' . $filename;
+}
+
+function validate_image_upload(array $file): string
+{
+    if (empty($file['name']) && (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE)) {
+        return '';
     }
 
-    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        throw new RuntimeException('写真アップロードに失敗しました。');
+    $errorCode = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($errorCode !== UPLOAD_ERR_OK) {
+        if ($errorCode === UPLOAD_ERR_INI_SIZE || $errorCode === UPLOAD_ERR_FORM_SIZE) {
+            throw new RuntimeException('写真のサイズは3MB以下にしてください。');
+        }
+        throw new RuntimeException('写真アップロードに失敗しました。もう一度お試しください。');
+    }
+
+    if (($file['size'] ?? 0) <= 0) {
+        throw new RuntimeException('写真ファイルを正しく選択してください。');
     }
 
     if (($file['size'] ?? 0) > MAX_UPLOAD_SIZE) {
-        throw new RuntimeException('写真サイズは3MB以下にしてください。');
+        throw new RuntimeException('写真のサイズは3MB以下にしてください。');
     }
 
-    $allowedMime = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/webp' => 'webp',
+    $originalName = (string)($file['name'] ?? '');
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!in_array($extension, $allowedExtensions, true)) {
+        throw new RuntimeException('アップロード可能な画像形式は JPG / JPEG / PNG / WEBP のみです。');
+    }
+
+    $allowedMimeTypes = [
+        'image/jpeg' => ['jpg', 'jpeg'],
+        'image/png' => ['png'],
+        'image/webp' => ['webp'],
     ];
 
     $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime = $finfo->file($file['tmp_name']);
-
-    if (!isset($allowedMime[$mime])) {
-        throw new RuntimeException('アップロード可能な画像形式は JPG / PNG / WEBP のみです。');
+    $mimeType = $finfo->file((string)$file['tmp_name']);
+    if (!is_string($mimeType) || !isset($allowedMimeTypes[$mimeType])) {
+        throw new RuntimeException('画像ファイルとして確認できませんでした。JPG / JPEG / PNG / WEBP を選択してください。');
     }
 
-    $filename = bin2hex(random_bytes(16)) . '.' . $allowedMime[$mime];
-    $destination = UPLOAD_DIR . '/' . $filename;
-
-    if (!move_uploaded_file($file['tmp_name'], $destination)) {
-        throw new RuntimeException('画像の保存に失敗しました。');
+    if (!in_array($extension, $allowedMimeTypes[$mimeType], true)) {
+        throw new RuntimeException('ファイルの拡張子と画像形式が一致しません。');
     }
 
-    return 'assets/uploads/' . $filename;
+    return $extension === 'jpeg' ? 'jpg' : $extension;
+}
+
+function save_diary_photo(array $file, int $userId): ?string
+{
+    $extension = validate_image_upload($file);
+    if ($extension === '') {
+        return null;
+    }
+
+    if (!is_dir(UPLOAD_DIR) && !mkdir(UPLOAD_DIR, 0775, true) && !is_dir(UPLOAD_DIR)) {
+        throw new RuntimeException('写真の保存先ディレクトリを作成できませんでした。');
+    }
+
+    $datePart = date('YmdHis');
+    $randomPart = bin2hex(random_bytes(8));
+    $filename = sprintf('diary_%d_%s_%s.%s', $userId, $datePart, $randomPart, $extension);
+    $destination = rtrim(UPLOAD_DIR, '/\\') . DIRECTORY_SEPARATOR . $filename;
+
+    if (!move_uploaded_file((string)$file['tmp_name'], $destination)) {
+        throw new RuntimeException('写真の保存に失敗しました。');
+    }
+
+    return get_upload_public_path($filename);
+}
+
+function handle_photo_upload(array $file): ?string
+{
+    return save_diary_photo($file, current_user_id());
+}
+
+function delete_diary_photo(?string $photoPath): void
+{
+    if ($photoPath === null || trim($photoPath) === '') {
+        return;
+    }
+
+    $normalizedPath = str_replace('\\', '/', $photoPath);
+    $prefix = 'assets/uploads/';
+    if (!str_starts_with($normalizedPath, $prefix)) {
+        return;
+    }
+
+    $filename = substr($normalizedPath, strlen($prefix));
+    if ($filename === '' || basename($filename) !== $filename) {
+        return;
+    }
+
+    $uploadDir = realpath(UPLOAD_DIR);
+    if ($uploadDir === false) {
+        return;
+    }
+
+    $targetPath = $uploadDir . DIRECTORY_SEPARATOR . $filename;
+    if (!is_file($targetPath)) {
+        return;
+    }
+
+    $targetRealPath = realpath($targetPath);
+    if ($targetRealPath === false || !str_starts_with($targetRealPath, $uploadDir . DIRECTORY_SEPARATOR)) {
+        return;
+    }
+
+    unlink($targetRealPath);
 }
