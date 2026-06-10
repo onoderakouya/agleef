@@ -11,8 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delet
     }
 
     $id = (int)($_POST['id'] ?? 0);
+    $photoStmt = db()->prepare('SELECT photo_path FROM diaries WHERE id = :id AND user_id = :user_id');
+    $photoStmt->execute([':id' => $id, ':user_id' => $userId]);
+    $photoPath = $photoStmt->fetchColumn();
+
     $delete = db()->prepare('DELETE FROM diaries WHERE id = :id AND user_id = :user_id');
     $delete->execute([':id' => $id, ':user_id' => $userId]);
+
+    if ($delete->rowCount() > 0) {
+        delete_diary_photo(is_string($photoPath) ? $photoPath : null);
+    }
 
     set_flash('success', '日誌を削除しました。');
     redirect('diary_list.php');
@@ -100,7 +108,7 @@ $hasSearchCondition = $selectedCropId !== null
     || ($dateTo !== '' && !$dateRangeInvalid)
     || $keyword !== '';
 
-$sql = 'SELECT d.id, d.work_date, d.weather, d.work_content, d.created_at, d.updated_at,
+$sql = 'SELECT d.id, d.work_date, d.weather, d.work_content, d.photo_path, d.created_at, d.updated_at,
                c.name AS crop_name,
                f.name AS field_name
         FROM diaries d
@@ -186,6 +194,7 @@ include __DIR__ . '/includes/header.php';
         <tr>
           <th>ID</th>
           <th>作業日</th>
+          <th>写真</th>
           <th>作物名</th>
           <th>圃場名</th>
           <th>天気</th>
@@ -198,7 +207,7 @@ include __DIR__ . '/includes/header.php';
       <tbody>
         <?php if (!$diaries): ?>
           <tr>
-            <td colspan="9">
+            <td colspan="10">
               <?= $hasSearchCondition ? '条件に一致する日誌はありません。' : '日誌がまだありません。' ?>
             </td>
           </tr>
@@ -207,6 +216,13 @@ include __DIR__ . '/includes/header.php';
             <tr>
               <td data-label="ID"><?= (int)$row['id'] ?></td>
               <td data-label="作業日"><?= e($row['work_date']) ?></td>
+              <td data-label="写真">
+                <?php if (!empty($row['photo_path'])): ?>
+                  <img class="diary-thumbnail" src="<?= e($row['photo_path']) ?>" alt="日誌写真サムネイル">
+                <?php else: ?>
+                  <span class="description">なし</span>
+                <?php endif; ?>
+              </td>
               <td data-label="作物名"><?= e($row['crop_name'] ?: '-') ?></td>
               <td data-label="圃場名"><?= e($row['field_name'] ?: '-') ?></td>
               <td data-label="天気"><?= e($row['weather'] ?: '-') ?></td>

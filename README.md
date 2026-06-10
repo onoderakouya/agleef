@@ -29,6 +29,7 @@
     footer.php
   /migrations
     20260319_add_crop_field_to_diaries.sql
+    add_photo_path_to_diaries.sql
   index.php
   login.php
   logout.php
@@ -75,7 +76,9 @@
 - work_date
 - weather
 - work_content
+- photo_path（写真の相対パス、nullable）
 - created_at
+- updated_at
 
 `crop_id` と `field_id` は、過去データを安全に残すためDB上は NULL 許容です。画面では新規作成・編集時に「作物」「圃場」を必須選択にしています。
 
@@ -123,12 +126,25 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 - migration 直後の既存日誌は `crop_id` / `field_id` が `NULL` です。
 - ログイン後、日誌編集画面から作物・圃場を選択して更新してください。
 
+### 日誌写真カラムを追加する migration
+
+既存の `database.sqlite` に `diaries.photo_path` を追加する場合は、先にバックアップを作成し、未追加であることを確認してから実行してください。SQLite は同じカラムを二重追加するとエラーになります。
+
+```bash
+cp database.sqlite database.sqlite.bak
+sqlite3 database.sqlite "PRAGMA table_info(diaries);"
+sqlite3 database.sqlite < migrations/add_photo_path_to_diaries.sql
+sqlite3 database.sqlite "PRAGMA table_info(diaries);"
+```
+
+`photo_path` がすでに表示されている場合、`migrations/add_photo_path_to_diaries.sql` は実行しないでください。
+
 ## 6. MVP機能
 - ログイン / ログアウト
 - 作物マスタ管理（登録・編集・削除）
 - 圃場管理（登録・編集・削除）
-- 日誌作成（作業日・作物・圃場・天気・作業内容）
-- 日誌一覧（新しい順、作物名・圃場名を表示）
+- 日誌作成（作業日・作物・圃場・天気・作業内容・写真1枚）
+- 日誌一覧（新しい順、作物名・圃場名・写真サムネイルを表示）
 - 日誌詳細表示
 - 日誌編集・削除
 

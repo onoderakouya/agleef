@@ -23,8 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (($_POST['action'] ?? '') === 'delete') {
+        $photoStmt = db()->prepare('SELECT photo_path FROM diaries WHERE id = :id AND user_id = :user_id');
+        $photoStmt->execute([':id' => $id, ':user_id' => $userId]);
+        $photoPath = $photoStmt->fetchColumn();
+
         $stmt = db()->prepare('DELETE FROM diaries WHERE id = :id AND user_id = :user_id');
         $stmt->execute([':id' => $id, ':user_id' => $userId]);
+
+        if ($stmt->rowCount() > 0) {
+            delete_diary_photo(is_string($photoPath) ? $photoPath : null);
+        }
 
         set_flash('success', '日誌を削除しました。');
         redirect('diary_list.php');
@@ -57,6 +65,14 @@ include __DIR__ . '/includes/header.php';
     <dt>圃場</dt><dd><?= e($diary['field_name'] ?? '-') ?></dd>
     <dt>天気</dt><dd><?= e((string)($diary['weather'] ?? '-')) ?></dd>
     <dt>作業内容</dt><dd><?= nl2br(e($diary['work_content'])) ?></dd>
+    <dt>写真</dt>
+    <dd>
+      <?php if (!empty($diary['photo_path'])): ?>
+        <img class="diary-photo" src="<?= e($diary['photo_path']) ?>" alt="日誌写真">
+      <?php else: ?>
+        写真なし
+      <?php endif; ?>
+    </dd>
     <dt>作成日時</dt><dd><?= e($diary['created_at']) ?></dd>
     <dt>更新日時</dt><dd><?= e($diary['updated_at'] ?? $diary['created_at']) ?></dd>
   </dl>

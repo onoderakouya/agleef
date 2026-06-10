@@ -89,6 +89,7 @@ function ensure_diaries_table(PDO $pdo): void
                 work_date TEXT NOT NULL,
                 weather TEXT,
                 work_content TEXT NOT NULL,
+                photo_path TEXT,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -106,11 +107,17 @@ function ensure_diaries_table(PDO $pdo): void
     $columns = $pdo->query('PRAGMA table_info(diaries)')->fetchAll();
     $columnNames = array_map(static fn(array $col): string => $col['name'], $columns);
 
+    if (!in_array('photo_path', $columnNames, true)) {
+        $pdo->exec('ALTER TABLE diaries ADD COLUMN photo_path TEXT');
+        $columnNames[] = 'photo_path';
+    }
+
     if (in_array('work_date', $columnNames, true)
         && in_array('weather', $columnNames, true)
         && in_array('crop_id', $columnNames, true)
         && in_array('field_id', $columnNames, true)
         && in_array('updated_at', $columnNames, true)
+        && in_array('photo_path', $columnNames, true)
     ) {
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_diaries_user_work_date ON diaries(user_id, work_date DESC)');
         $pdo->exec('CREATE INDEX IF NOT EXISTS idx_diaries_crop_id ON diaries(crop_id)');
@@ -130,6 +137,7 @@ function ensure_diaries_table(PDO $pdo): void
                 work_date TEXT NOT NULL,
                 weather TEXT,
                 work_content TEXT NOT NULL,
+                photo_path TEXT,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -145,6 +153,7 @@ function ensure_diaries_table(PDO $pdo): void
         $hasUpdatedAt = in_array('updated_at', $columnNames, true);
         $hasCropId = in_array('crop_id', $columnNames, true);
         $hasFieldId = in_array('field_id', $columnNames, true);
+        $hasPhotoPath = in_array('photo_path', $columnNames, true);
 
         $workDateColumn = $hasWorkDate ? 'work_date' : ($hasDate ? 'date' : "date('now')");
         $weatherColumn = $hasWeather ? 'weather' : 'NULL';
@@ -152,10 +161,11 @@ function ensure_diaries_table(PDO $pdo): void
         $updatedAtColumn = $hasUpdatedAt ? 'updated_at' : $createdAtColumn;
         $cropIdColumn = $hasCropId ? 'crop_id' : 'NULL';
         $fieldIdColumn = $hasFieldId ? 'field_id' : 'NULL';
+        $photoPathColumn = $hasPhotoPath ? 'photo_path' : 'NULL';
 
         $pdo->exec(
-            "INSERT INTO diaries_new (id, user_id, crop_id, field_id, work_date, weather, work_content, created_at, updated_at)
-             SELECT id, user_id, {$cropIdColumn}, {$fieldIdColumn}, {$workDateColumn}, {$weatherColumn}, work_content, COALESCE({$createdAtColumn}, CURRENT_TIMESTAMP), COALESCE({$updatedAtColumn}, {$createdAtColumn}, CURRENT_TIMESTAMP)
+            "INSERT INTO diaries_new (id, user_id, crop_id, field_id, work_date, weather, work_content, photo_path, created_at, updated_at)
+             SELECT id, user_id, {$cropIdColumn}, {$fieldIdColumn}, {$workDateColumn}, {$weatherColumn}, work_content, {$photoPathColumn}, COALESCE({$createdAtColumn}, CURRENT_TIMESTAMP), COALESCE({$updatedAtColumn}, {$createdAtColumn}, CURRENT_TIMESTAMP)
              FROM diaries"
         );
 
