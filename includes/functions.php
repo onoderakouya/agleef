@@ -14,6 +14,7 @@ function is_logged_in(): bool
 function require_login(): void
 {
     if (!is_logged_in()) {
+        set_flash('error', 'ログインが必要です。');
         header('Location: login.php');
         exit;
     }
@@ -26,7 +27,7 @@ function current_user_id(): int
 
 function current_user_name(): string
 {
-    return $_SESSION['username'] ?? '';
+    return $_SESSION['username'] ?? 'ゲスト';
 }
 
 function redirect(string $path): void
@@ -35,16 +36,28 @@ function redirect(string $path): void
     exit;
 }
 
+function set_flash(string $type, string $message): void
+{
+    $_SESSION['flash_' . $type] = $message;
+}
+
+function get_flash(string $type): ?string
+{
+    $key = 'flash_' . $type;
+    $message = $_SESSION[$key] ?? null;
+    unset($_SESSION[$key]);
+
+    return $message;
+}
+
 function flash(string $key, ?string $message = null): ?string
 {
     if ($message !== null) {
-        $_SESSION['flash'][$key] = $message;
+        set_flash($key, $message);
         return null;
     }
 
-    $msg = $_SESSION['flash'][$key] ?? null;
-    unset($_SESSION['flash'][$key]);
-    return $msg;
+    return get_flash($key);
 }
 
 function csrf_token(): string
@@ -52,12 +65,15 @@ function csrf_token(): string
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
+
     return $_SESSION['csrf_token'];
 }
 
 function verify_csrf_token(?string $token): bool
 {
-    return is_string($token) && isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    return is_string($token)
+        && isset($_SESSION['csrf_token'])
+        && hash_equals($_SESSION['csrf_token'], $token);
 }
 
 function get_user_crops(int $userId): array
