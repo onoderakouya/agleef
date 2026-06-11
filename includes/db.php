@@ -34,6 +34,7 @@ function initialize_database(PDO $pdo): void
     ensure_users_table($pdo);
     ensure_crop_field_tables($pdo);
     ensure_diaries_table($pdo);
+    ensure_expense_tables($pdo);
 
     $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username');
     $stmt->execute([':username' => 'demo']);
@@ -192,4 +193,53 @@ function ensure_diaries_table(PDO $pdo): void
         $pdo->rollBack();
         throw $e;
     }
+}
+
+
+function ensure_expense_tables(PDO $pdo): void
+{
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS expense_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE (user_id, name)
+        )'
+    );
+
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            expense_date TEXT NOT NULL,
+            category_id INTEGER,
+            crop_id INTEGER,
+            field_id INTEGER,
+            payee TEXT,
+            description TEXT NOT NULL,
+            amount INTEGER NOT NULL,
+            payment_method TEXT,
+            receipt_path TEXT,
+            memo TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (category_id) REFERENCES expense_categories(id) ON DELETE SET NULL,
+            FOREIGN KEY (crop_id) REFERENCES crops(id) ON DELETE SET NULL,
+            FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE SET NULL,
+            CHECK (amount > 0),
+            CHECK (length(trim(expense_date)) > 0),
+            CHECK (length(trim(description)) > 0)
+        )'
+    );
+
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_expense_categories_user_order ON expense_categories(user_id, sort_order, name)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, expense_date DESC)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_expenses_category_id ON expenses(category_id)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_expenses_crop_id ON expenses(crop_id)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_expenses_field_id ON expenses(field_id)');
 }
