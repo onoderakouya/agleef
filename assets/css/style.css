@@ -234,6 +234,27 @@ th { font-size: 0.92rem; color: #425248; }
 .detail-grid dt { font-weight: 700; }
 .detail-grid dd { margin: 0; }
 
+.account-detail {
+  margin-top: 16px;
+  padding: 14px;
+  background: #fbfdfc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.form-help {
+  display: block;
+  margin-top: 6px;
+  color: #607268;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.message-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
 .photo-box img {
   width: 100%;
   max-width: 380px;

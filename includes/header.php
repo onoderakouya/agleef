@@ -23,9 +23,12 @@ $pageTitle = $pageTitle ?? APP_NAME;
     <h1><a href="index.php"><?= e(APP_NAME) ?></a></h1>
     <nav>
       <?php if (is_logged_in()): ?>
-        <span class="badge">こんにちは、<?= e(current_user_name()) ?> さん</span>
+        <a class="badge" href="account.php">こんにちは、<?= e(current_user_name()) ?> さん</a>
         <a class="btn small" href="dashboard.php">ダッシュボード</a>
         <a class="btn small" href="diary_list.php">日誌一覧</a>
+        <a class="btn small" href="crops.php">作物管理</a>
+        <a class="btn small" href="fields.php">圃場管理</a>
+        <a class="btn small" href="account.php">アカウント</a>
         <a class="btn small danger" href="logout.php">ログアウト</a>
       <?php else: ?>
         <a class="btn small primary" href="login.php">ログイン</a>

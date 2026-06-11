@@ -40,6 +40,9 @@
   diary_create.php
   diary_edit.php
   diary_detail.php
+  account.php
+  account_edit.php
+  password_change.php
   schema.sql
   seed.sql
   README.md
@@ -147,7 +150,28 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 - 日誌一覧（新しい順、作物名・圃場名・写真サムネイルを表示）
 - 日誌詳細表示
 - 日誌編集・削除
+- アカウント情報表示
+- ユーザー名変更（現在のパスワード確認・重複チェック・CSRFトークン検証）
+- パスワード変更（現在のパスワード確認・8文字以上・確認入力・CSRFトークン検証）
 
-## 7. 補足
+
+## 7. アカウント管理
+
+ログイン後、ヘッダーの「アカウント」またはダッシュボードの「アカウント情報を確認する」から、自分のアカウント情報を確認できます。
+
+- `account.php`: ユーザーID、ユーザー名、登録日時、更新日時を表示
+- `account_edit.php`: ユーザー名を変更
+  - ユーザー名は前後の空白を削除し、3文字以上50文字以内で検証
+  - 他ユーザーが使用中のユーザー名は使用不可
+  - 変更時は現在のパスワードを `password_verify()` で確認
+- `password_change.php`: パスワードを変更
+  - 新しいパスワードは8文字以上
+  - 確認用パスワードとの一致を検証
+  - 現在のパスワードと同じ値は不可
+  - `password_hash()` でハッシュ化して保存
+
+ユーザー情報の取得・更新はGETパラメータではなく、必ずセッションの `user_id` を使用します。更新成功時は `users.updated_at` を更新し、ユーザー名変更時はセッション内の `username` も更新します。
+
+## 8. 補足
 - `includes/db.php` は起動時に不足テーブルや古い `diaries` 構造を補正しますが、本番データでは事前バックアップ後に migration SQL を明示実行する運用を推奨します。
 - 本番運用ではHTTPS化、Cookie設定強化、バックアップ設計を追加してください。
