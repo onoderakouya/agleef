@@ -26,10 +26,12 @@ function initialize_database(PDO $pdo): void
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )'
     );
 
+    ensure_users_table($pdo);
     ensure_crop_field_tables($pdo);
     ensure_diaries_table($pdo);
 
@@ -42,6 +44,17 @@ function initialize_database(PDO $pdo): void
             ':username' => 'demo',
             ':password_hash' => password_hash('password', PASSWORD_DEFAULT),
         ]);
+    }
+}
+
+function ensure_users_table(PDO $pdo): void
+{
+    $columns = $pdo->query('PRAGMA table_info(users)')->fetchAll();
+    $columnNames = array_map(static fn(array $col): string => $col['name'], $columns);
+
+    if (!in_array('updated_at', $columnNames, true)) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN updated_at TEXT');
+        $pdo->exec("UPDATE users SET updated_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE updated_at IS NULL OR updated_at = ''");
     }
 }
 

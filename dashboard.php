@@ -18,6 +18,7 @@ include __DIR__ . '/includes/header.php';
     <a class="btn" href="diary_list.php">日誌一覧</a>
     <a class="btn" href="crops.php">作物管理</a>
     <a class="btn" href="fields.php">圃場管理</a>
+    <a class="btn" href="account.php">アカウント情報を確認する</a>
   </div>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
