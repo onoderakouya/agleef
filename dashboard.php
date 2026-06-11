@@ -54,6 +54,7 @@ include __DIR__ . '/includes/header.php';
     <a class="btn" href="expense_list.php">経費一覧を見る</a>
     <a class="btn primary" href="sale_create.php">＋ 売上を登録する</a>
     <a class="btn" href="sale_list.php">売上一覧を見る</a>
+    <a class="btn primary" href="annual_summary.php">年間集計を見る</a>
     <a class="btn" href="expense_category.php">経費カテゴリを管理する</a>
     <a class="btn" href="account.php">アカウント情報を確認する</a>
   </div>
