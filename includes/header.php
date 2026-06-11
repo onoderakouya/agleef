@@ -13,7 +13,12 @@ $pageTitle = $pageTitle ?? APP_NAME;
 <body>
 <header class="site-header">
   <div class="layout nav-wrap">
-    <h1><a href="index.php"><?= e(APP_NAME) ?></a></h1>
+    <h1 class="brand-heading">
+      <a href="<?= is_logged_in() ? 'dashboard.php' : 'index.php' ?>" class="brand">
+        <span class="brand-title">AGLEEF-アグリーフ-</span>
+        <span class="brand-subtitle">農業日誌アプリ</span>
+      </a>
+    </h1>
     <nav>
       <?php if (is_logged_in()): ?>
         <a class="badge" href="account.php">こんにちは、<?= e(current_user_name()) ?> さん</a>
