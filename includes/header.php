@@ -9,13 +9,6 @@ $pageTitle = $pageTitle ?? APP_NAME;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="assets/css/style.css">
-  <style>
-    .layout { max-width: 860px; margin: 0 auto; padding: 0 16px; }
-    .site-header { position: static; }
-    .site-header nav { display: flex; gap: 8px; flex-wrap: wrap; }
-    .site-footer { text-align: center; color: #607268; font-size: 13px; padding: 20px 0 30px; }
-    .badge { background: #e8f6ee; color: #1f6b46; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
-  </style>
 </head>
 <body>
 <header class="site-header">

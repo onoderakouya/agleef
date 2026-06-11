@@ -5,6 +5,7 @@
   --text: #1f2a24;
   --main: #2f855a;
   --danger: #c0392b;
+  --content-width: 1160px;
 }
 
 * { box-sizing: border-box; }
@@ -20,7 +21,7 @@ body {
 
 .container,
 .layout {
-  width: min(980px, 100% - 24px);
+  width: min(var(--content-width), 100% - 32px);
   margin: 0 auto;
 }
 
@@ -36,8 +37,18 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 14px;
+  gap: 18px;
   padding: 12px 0;
+}
+
+.site-header nav {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .site-header a {
@@ -46,8 +57,31 @@ body {
 }
 
 .site-header h1 {
+  flex: 0 0 auto;
   font-size: 1.15rem;
   margin: 0;
+  white-space: nowrap;
+}
+
+.site-header h1 a,
+.site-header nav a {
+  white-space: nowrap;
+}
+
+.site-footer {
+  text-align: center;
+  color: #607268;
+  font-size: 13px;
+  padding: 20px 0 30px;
+}
+
+.badge {
+  background: #e8f6ee;
+  color: #1f6b46;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 main {
@@ -124,7 +158,7 @@ button,
 
 .primary { background: var(--main); color: #fff; }
 .danger { background: var(--danger); color: #fff; }
-.small { padding: 10px 12px; font-size: 0.94rem; min-height: 42px; }
+.small { padding: 9px 10px; font-size: 0.92rem; min-height: 40px; white-space: nowrap; }
 
 .button-row {
   display: flex;
@@ -272,12 +306,21 @@ th { font-size: 0.92rem; color: #425248; }
 .alert.success { background: #e8f6ee; color: #1f6b46; }
 .alert.error { background: #fdeceb; color: #9b2c21; }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   body { font-size: 16px; }
   .layout,
   .container { width: 100%; padding: 0 14px; }
-  .nav-wrap { flex-direction: column; align-items: flex-start; }
-  .site-header nav { display: flex; flex-wrap: wrap; gap: 8px; }
+  .nav-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .site-header nav {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  .site-header h1 { font-size: 1.1rem; }
+  .site-header nav a { white-space: normal; }
+  .site-header .btn { white-space: nowrap; }
+  .small { padding: 10px 12px; font-size: 0.94rem; min-height: 42px; }
 
   .button-row > * {
     flex: 1 1 calc(50% - 6px);
