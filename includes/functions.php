@@ -224,3 +224,119 @@ function delete_diary_photo(?string $photoPath): void
 
     unlink($targetRealPath);
 }
+
+function format_yen(int $amount): string
+{
+    return number_format($amount) . '円';
+}
+
+function get_expense_upload_public_path(string $filename): string
+{
+    return 'assets/uploads/expenses/' . $filename;
+}
+
+function save_expense_receipt(array $file, int $userId): ?string
+{
+    $extension = validate_image_upload($file);
+    if ($extension === '') {
+        return null;
+    }
+
+    if (!is_dir(EXPENSE_UPLOAD_DIR) && !mkdir(EXPENSE_UPLOAD_DIR, 0775, true) && !is_dir(EXPENSE_UPLOAD_DIR)) {
+        throw new RuntimeException('領収書写真の保存先ディレクトリを作成できませんでした。');
+    }
+
+    $datePart = date('YmdHis');
+    $randomPart = bin2hex(random_bytes(8));
+    $filename = sprintf('expense_%d_%s_%s.%s', $userId, $datePart, $randomPart, $extension);
+    $destination = rtrim(EXPENSE_UPLOAD_DIR, '/\\') . DIRECTORY_SEPARATOR . $filename;
+
+    if (!move_uploaded_file((string)$file['tmp_name'], $destination)) {
+        throw new RuntimeException('領収書写真の保存に失敗しました。');
+    }
+
+    return get_expense_upload_public_path($filename);
+}
+
+function delete_uploaded_file_safely(?string $publicPath): void
+{
+    if ($publicPath === null || trim($publicPath) === '') {
+        return;
+    }
+
+    $normalizedPath = str_replace('\\', '/', $publicPath);
+    $prefix = 'assets/uploads/';
+    if (!str_starts_with($normalizedPath, $prefix)) {
+        return;
+    }
+
+    $relative = substr($normalizedPath, strlen($prefix));
+    if ($relative === '' || str_contains($relative, '..')) {
+        return;
+    }
+
+    $baseDir = realpath(UPLOAD_DIR);
+    if ($baseDir === false) {
+        return;
+    }
+
+    $targetPath = $baseDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+    if (!is_file($targetPath)) {
+        return;
+    }
+
+    $targetRealPath = realpath($targetPath);
+    if ($targetRealPath === false || !str_starts_with($targetRealPath, $baseDir . DIRECTORY_SEPARATOR)) {
+        return;
+    }
+
+    unlink($targetRealPath);
+}
+
+function default_expense_category_names(): array
+{
+    return [
+        '種苗費',
+        '肥料費',
+        '農薬費',
+        '諸材料費',
+        '農具費',
+        '修繕費',
+        '動力光熱費',
+        '車両費',
+        '荷造運賃',
+        '通信費',
+        '研修費',
+        '雑費',
+        'その他',
+    ];
+}
+
+function ensure_default_expense_categories(int $userId): void
+{
+    $count = db()->prepare('SELECT COUNT(*) FROM expense_categories WHERE user_id = :user_id');
+    $count->execute([':user_id' => $userId]);
+
+    if ((int)$count->fetchColumn() > 0) {
+        return;
+    }
+
+    $insert = db()->prepare(
+        'INSERT INTO expense_categories (user_id, name, sort_order) VALUES (:user_id, :name, :sort_order)'
+    );
+
+    foreach (default_expense_category_names() as $index => $name) {
+        $insert->execute([
+            ':user_id' => $userId,
+            ':name' => $name,
+            ':sort_order' => ($index + 1) * 10,
+        ]);
+    }
+}
+
+function get_user_expense_categories(int $userId): array
+{
+    $stmt = db()->prepare('SELECT id, name, sort_order FROM expense_categories WHERE user_id = :user_id ORDER BY sort_order ASC, name ASC');
+    $stmt->execute([':user_id' => $userId]);
+    return $stmt->fetchAll();
+}

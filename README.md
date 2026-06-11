@@ -175,3 +175,108 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 ## 8. 補足
 - `includes/db.php` は起動時に不足テーブルや古い `diaries` 構造を補正しますが、本番データでは事前バックアップ後に migration SQL を明示実行する運用を推奨します。
 - 本番運用ではHTTPS化、Cookie設定強化、バックアップ設計を追加してください。
+
+## 9. 経費記録機能（第1段階MVP）
+
+確定申告準備や経営の振り返りに使えるよう、日々の農業経費を記録する機能を追加しています。複式簿記・仕訳・消費税・インボイス・減価償却の厳密な処理はこの段階では対象外です。税務判断が必要な内容は、将来的に税理士など専門家へ確認してください。
+
+### 追加機能
+- `expense_list.php`: 経費一覧、検索・絞り込み、表示中合計、今月合計、今年合計、カテゴリ別合計
+- `expense_create.php`: 経費登録（支払日、カテゴリ、作物、圃場、支払先、内容、金額、支払方法、領収書写真、メモ）
+- `expense_detail.php`: 経費詳細と領収書写真表示
+- `expense_edit.php`: 経費編集、領収書写真の差し替え・削除
+- `expense_delete.php`: POST + CSRFトークンによる経費削除
+- `expense_category.php`: ユーザー別の経費カテゴリ追加・編集・削除
+
+### 経費カテゴリの初期作成
+ログイン後、対象ユーザーの `expense_categories` が0件の場合、`ensure_default_expense_categories($user_id)` により以下の初期カテゴリが自動作成されます。
+
+- 種苗費
+- 肥料費
+- 農薬費
+- 諸材料費
+- 農具費
+- 修繕費
+- 動力光熱費
+- 車両費
+- 荷造運賃
+- 通信費
+- 研修費
+- 雑費
+- その他
+
+### 領収書写真アップロード
+- 保存先: `assets/uploads/expenses/`
+- 対応形式: JPG / JPEG / PNG / WEBP
+- 最大サイズ: `includes/config.php` の `MAX_UPLOAD_SIZE`（標準3MB）
+- ファイル名は元ファイル名を使わず、ユーザーID・日時・ランダム文字列を含む安全な名前で保存します。
+- 削除時は `assets/uploads/` 配下にあるファイルだけを安全確認して削除します。
+
+### 経費テーブル
+
+#### expense_categories
+- id (PK)
+- user_id (FK -> users)
+- name
+- sort_order
+- created_at
+- updated_at
+- UNIQUE (user_id, name)
+
+#### expenses
+- id (PK)
+- user_id (FK -> users)
+- expense_date
+- category_id (FK -> expense_categories, nullable / ON DELETE SET NULL)
+- crop_id (FK -> crops, nullable / ON DELETE SET NULL)
+- field_id (FK -> fields, nullable / ON DELETE SET NULL)
+- payee
+- description
+- amount
+- payment_method
+- receipt_path
+- memo
+- created_at
+- updated_at
+
+## 10. 経費機能の既存DB migration 手順
+
+既存の `database.sqlite` に経費テーブルを追加する場合は、バックアップ後に migration SQL を実行してください。
+
+```bash
+cp database.sqlite database.sqlite.bak
+sqlite3 database.sqlite < migrations/create_expense_tables.sql
+sqlite3 database.sqlite "PRAGMA foreign_key_check;"
+sqlite3 database.sqlite "PRAGMA table_info(expense_categories);"
+sqlite3 database.sqlite "PRAGMA table_info(expenses);"
+```
+
+migration SQL には demo ユーザー向けの初期カテゴリ投入SQLも含まれます。通常ユーザーはログイン後にカテゴリが0件なら自動作成されます。
+
+## 11. 経費機能の本番反映手順
+
+1. アプリケーションファイルを本番サーバーへ配置します。
+2. `database.sqlite` と `assets/uploads/` をバックアップします。
+3. `sqlite3 database.sqlite < migrations/create_expense_tables.sql` を実行します。
+4. `assets/uploads/expenses/` がWebサーバーから書き込み可能であることを確認します。
+5. ログインして「経費管理」へ移動し、カテゴリ初期作成・経費登録・写真アップロードを確認します。
+
+## 12. 経費機能の動作確認
+
+- ログイン後、ヘッダーまたはダッシュボードから経費一覧へ移動できる
+- 経費カテゴリが初期作成される
+- 経費カテゴリを追加・編集できる
+- 経費を写真なし / 写真ありで登録できる
+- JPG / PNG / WEBP をアップロードでき、画像以外や3MB超過ファイルは拒否される
+- 経費一覧・詳細・編集・削除ができる
+- 領収書写真の差し替え・削除ができる
+- 表示中合計、今月合計、今年合計、カテゴリ別合計が表示される
+- 期間、カテゴリ、作物、圃場、キーワードで絞り込みできる
+- 他ユーザーの経費・カテゴリ・作物・圃場へアクセスできない
+- 既存の日誌、作物、圃場、アカウント機能が動作する
+
+### 想定されるエラーと対処法
+- `no such table: expenses`: migration が未実行です。`sqlite3 database.sqlite < migrations/create_expense_tables.sql` を実行してください。
+- 写真を保存できない: `assets/uploads/expenses/` の書き込み権限を確認してください。
+- `写真のサイズは3MB以下にしてください。`: `MAX_UPLOAD_SIZE` を超えています。画像を圧縮するか、設定値を見直してください。
+- `同じ名前のカテゴリはすでに登録されています。`: 同一ユーザー内ではカテゴリ名が重複できません。別名にしてください。
