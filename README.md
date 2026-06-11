@@ -280,3 +280,64 @@ migration SQL には demo ユーザー向けの初期カテゴリ投入SQLも含
 - 写真を保存できない: `assets/uploads/expenses/` の書き込み権限を確認してください。
 - `写真のサイズは3MB以下にしてください。`: `MAX_UPLOAD_SIZE` を超えています。画像を圧縮するか、設定値を見直してください。
 - `同じ名前のカテゴリはすでに登録されています。`: 同一ユーザー内ではカテゴリ名が重複できません。別名にしてください。
+
+## 10. 売上記録機能（第2段階MVP）
+
+確定申告準備や農業経営の振り返りに使えるよう、農産物販売の売上を日々記録する機能を追加しています。複式簿記・仕訳・消費税・インボイス・補助金処理・確定申告の完全自動化はこの段階では対象外です。税務判断が必要な内容は、将来的に税理士など専門家へ確認してください。
+
+### 追加機能
+- `sale_list.php`: 売上一覧、検索・絞り込み、表示中の売上総額合計、表示中の差引入金額合計、今月・今年の売上総額合計、販売経路別合計
+- `sale_create.php`: 売上登録（売上日、販売経路、作物、圃場、販売先、品目、数量、単位、単価、売上総額、手数料、送料、差引入金額、入金状況、入金日、明細写真、メモ）
+- `sale_detail.php`: 売上詳細と明細・伝票写真表示
+- `sale_edit.php`: 売上編集、明細写真の差し替え・削除
+- `sale_delete.php`: POST + CSRFトークンによる売上削除
+
+### sales テーブル
+- `id`: 主キー
+- `user_id`: ユーザーID（`users.id`）
+- `sale_date`: 売上日・販売日・出荷日
+- `crop_id`: 関連作物（任意）
+- `field_id`: 関連圃場（任意）
+- `buyer`: 販売先・取引先
+- `sales_channel`: 販売経路
+- `product_name`: 販売品目名
+- `quantity`: 数量
+- `unit`: 単位
+- `unit_price`: 単価
+- `gross_amount`: 売上総額
+- `fee_amount`: 販売手数料・JA手数料など
+- `shipping_amount`: 送料・運賃など
+- `net_amount`: 差引入金額
+- `payment_status`: 入金状況
+- `payment_date`: 入金日
+- `document_path`: 明細書・納品書・売上伝票などの画像パス
+- `memo`: メモ
+- `created_at`: 作成日時
+- `updated_at`: 更新日時
+
+### 既存DBへの反映手順
+
+既存の `database.sqlite` に売上テーブルを追加する場合は、バックアップ後に migration を実行してください。
+
+```bash
+cp database.sqlite database.sqlite.bak
+sqlite3 database.sqlite < migrations/create_sales_table.sql
+sqlite3 database.sqlite "PRAGMA table_info(sales);"
+sqlite3 database.sqlite "PRAGMA foreign_key_check;"
+```
+
+### 画像アップロード
+
+売上明細・伝票写真は `assets/uploads/sales/` に保存され、DBには相対パスを保存します。対応形式は JPG / JPEG / PNG / WEBP、最大サイズは `includes/config.php` の `MAX_UPLOAD_SIZE`（3MB）です。ファイル名は元ファイル名を使わず、ユーザーID・日時・ランダム文字列から生成します。
+
+### 動作確認
+
+1. ログイン後、ヘッダーまたはダッシュボードから売上一覧へ移動する
+2. 写真なしで売上を登録する
+3. JPG / PNG / WEBP の明細写真つきで売上を登録する
+4. 画像以外のファイルや3MB超の写真がエラーになることを確認する
+5. 売上一覧・詳細・編集・削除ができることを確認する
+6. 期間、販売経路、作物、圃場、入金状況、キーワードで絞り込みできることを確認する
+7. 数量×単価、売上総額−手数料−送料の補助計算が動作することを確認する
+8. 他ユーザーの売上詳細URLや編集URLに直接アクセスしても表示・編集・削除できないことを確認する
+9. 既存の日誌・作物・圃場・経費・アカウント機能が従来通り使えることを確認する

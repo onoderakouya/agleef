@@ -8,6 +8,7 @@ define('APP_NAME', '農業日誌アプリ');
 define('DB_PATH', __DIR__ . '/../database.sqlite');
 define('UPLOAD_DIR', __DIR__ . '/../assets/uploads');
 define('EXPENSE_UPLOAD_DIR', UPLOAD_DIR . '/expenses');
+define('SALE_UPLOAD_DIR', UPLOAD_DIR . '/sales');
 define('MAX_UPLOAD_SIZE', 3 * 1024 * 1024); // 3MB
 
 if (!is_dir(UPLOAD_DIR)) {
@@ -16,4 +17,8 @@ if (!is_dir(UPLOAD_DIR)) {
 
 if (!is_dir(EXPENSE_UPLOAD_DIR)) {
     mkdir(EXPENSE_UPLOAD_DIR, 0775, true);
+}
+
+if (!is_dir(SALE_UPLOAD_DIR)) {
+    mkdir(SALE_UPLOAD_DIR, 0775, true);
 }

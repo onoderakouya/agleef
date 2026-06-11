@@ -258,6 +258,55 @@ function save_expense_receipt(array $file, int $userId): ?string
     return get_expense_upload_public_path($filename);
 }
 
+function format_quantity(float $quantity): string
+{
+    $formatted = rtrim(rtrim(number_format($quantity, 3, '.', ''), '0'), '.');
+    return $formatted === '' ? '0' : $formatted;
+}
+
+function get_sale_upload_public_path(string $filename): string
+{
+    return 'assets/uploads/sales/' . $filename;
+}
+
+function save_sale_document(array $file, int $userId): ?string
+{
+    $extension = validate_image_upload($file);
+    if ($extension === '') {
+        return null;
+    }
+
+    if (!is_dir(SALE_UPLOAD_DIR) && !mkdir(SALE_UPLOAD_DIR, 0775, true) && !is_dir(SALE_UPLOAD_DIR)) {
+        throw new RuntimeException('売上明細写真の保存先ディレクトリを作成できませんでした。');
+    }
+
+    $datePart = date('YmdHis');
+    $randomPart = bin2hex(random_bytes(8));
+    $filename = sprintf('sale_%d_%s_%s.%s', $userId, $datePart, $randomPart, $extension);
+    $destination = rtrim(SALE_UPLOAD_DIR, '/\\') . DIRECTORY_SEPARATOR . $filename;
+
+    if (!move_uploaded_file((string)$file['tmp_name'], $destination)) {
+        throw new RuntimeException('売上明細写真の保存に失敗しました。');
+    }
+
+    return get_sale_upload_public_path($filename);
+}
+
+function sales_channel_options(): array
+{
+    return ['JA出荷', '直売所', '個人販売', '飲食店・業者販売', 'マルシェ', 'ネット販売', 'その他'];
+}
+
+function payment_status_options(): array
+{
+    return ['未入金', '入金済み', '一部入金', '対象外'];
+}
+
+function sale_unit_options(): array
+{
+    return ['kg', 'g', '個', '袋', '箱', 'ケース', '束', '本', 'その他'];
+}
+
 function delete_uploaded_file_safely(?string $publicPath): void
 {
     if ($publicPath === null || trim($publicPath) === '') {
