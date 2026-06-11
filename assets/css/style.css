@@ -683,3 +683,142 @@ button:disabled,
 
   .sale-table td.actions-cell { padding-top: 12px; }
 }
+
+.annual-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.year-select-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8fbf9;
+}
+
+.year-select-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 700;
+  color: #425248;
+}
+
+.year-select-form select {
+  min-width: 120px;
+  margin-top: 0;
+  padding: 12px;
+}
+
+.annual-note {
+  margin: 14px 0 0;
+  background: #fff8e5;
+  color: #6b4a00;
+  border: 1px solid #ead69a;
+}
+
+.annual-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.annual-summary-card {
+  background: linear-gradient(180deg, #fbfdfc 0%, #eef8f1 100%);
+}
+
+.annual-summary-card strong {
+  font-size: 1.55rem;
+}
+
+.amount-negative {
+  color: var(--danger) !important;
+}
+
+.amount-positive {
+  color: var(--main) !important;
+}
+
+.annual-table-wrap {
+  margin-top: 10px;
+}
+
+.annual-table {
+  min-width: 760px;
+}
+
+.monthly-table {
+  min-width: 980px;
+}
+
+.annual-table th,
+.annual-table td {
+  white-space: normal;
+}
+
+.mini-bars {
+  display: grid;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.mini-bar {
+  display: block;
+  min-width: 2px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.mini-bar.sales {
+  background: var(--main);
+}
+
+.mini-bar.expense {
+  background: #d97706;
+}
+
+.mini-bar-legend {
+  margin-bottom: 0;
+}
+
+.legend-sales {
+  color: var(--main);
+  margin-right: 4px;
+}
+
+.legend-expense {
+  color: #d97706;
+  margin: 0 4px 0 12px;
+}
+
+@media (max-width: 767px) {
+  .annual-title-row,
+  .year-select-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .year-select-form label,
+  .year-select-form .btn {
+    width: 100%;
+  }
+
+  .annual-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .annual-table,
+  .monthly-table {
+    min-width: 760px;
+  }
+
+  .annual-summary-card strong {
+    font-size: 1.35rem;
+  }
+}

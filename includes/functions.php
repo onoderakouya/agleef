@@ -230,6 +230,48 @@ function format_yen(int $amount): string
     return number_format($amount) . '円';
 }
 
+
+function format_percent(int|float $value, int|float $total): string
+{
+    if ((float)$total <= 0.0) {
+        return '0.0%';
+    }
+
+    return number_format(((float)$value / (float)$total) * 100, 1) . '%';
+}
+
+function get_selected_year(string $key = 'year'): int
+{
+    $currentYear = (int)date('Y');
+    $value = $_GET[$key] ?? null;
+
+    if (is_array($value) || $value === null || !preg_match('/\A\d{4}\z/', (string)$value)) {
+        return $currentYear;
+    }
+
+    $year = (int)$value;
+    if ($year < 2000 || $year > $currentYear + 1) {
+        return $currentYear;
+    }
+
+    return $year;
+}
+
+function get_year_range(): array
+{
+    $currentYear = (int)date('Y');
+    return range($currentYear + 1, 2000);
+}
+
+function calc_net_amount(?int $grossAmount, ?int $feeAmount = 0, ?int $shippingAmount = 0, ?int $netAmount = null): int
+{
+    if ($netAmount !== null) {
+        return $netAmount;
+    }
+
+    return (int)$grossAmount - (int)$feeAmount - (int)$shippingAmount;
+}
+
 function get_expense_upload_public_path(string $filename): string
 {
     return 'assets/uploads/expenses/' . $filename;
