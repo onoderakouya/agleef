@@ -29,6 +29,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
         <a class="btn small" href="expense_list.php">経費管理</a>
         <a class="btn small" href="sale_list.php">売上管理</a>
         <a class="btn small" href="annual_summary.php">年間集計</a>
+        <a class="btn small" href="export.php">CSV出力</a>
         <a class="btn small" href="account.php">アカウント</a>
         <a class="btn small danger" href="logout.php">ログアウト</a>
       <?php else: ?>

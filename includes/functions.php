@@ -431,3 +431,112 @@ function get_user_expense_categories(int $userId): array
     $stmt->execute([':user_id' => $userId]);
     return $stmt->fetchAll();
 }
+
+function sanitize_csv_cell(mixed $value): string|int|float
+{
+    if ($value === null) {
+        return '';
+    }
+
+    if (is_int($value) || is_float($value)) {
+        return $value;
+    }
+
+    $stringValue = (string)$value;
+    $trimmedValue = ltrim($stringValue);
+    if ($trimmedValue !== '' && in_array($trimmedValue[0], ['=', '+', '-', '@', '*'], true)) {
+        return "'" . $stringValue;
+    }
+
+    return $stringValue;
+}
+
+function validate_date(string $value): bool
+{
+    return is_valid_date($value);
+}
+
+function get_export_types(): array
+{
+    return [
+        'sales' => '売上',
+        'expenses' => '経費',
+        'diaries' => '日誌',
+        'annual_summary' => '年間集計',
+        'finance_all' => '売上・経費まとめ',
+    ];
+}
+
+function get_export_encodings(): array
+{
+    return [
+        'utf8_bom' => 'UTF-8 BOM付き',
+        'sjis' => 'Shift_JIS',
+    ];
+}
+
+function get_export_date_range(int $year, string $dateFrom = '', string $dateTo = ''): array
+{
+    if ($dateFrom !== '' || $dateTo !== '') {
+        return [
+            'start' => $dateFrom !== '' ? $dateFrom : sprintf('%04d-01-01', $year),
+            'end' => $dateTo !== '' ? $dateTo : sprintf('%04d-12-31', $year),
+            'label' => ($dateFrom !== '' ? $dateFrom : sprintf('%04d-01-01', $year)) . '_' . ($dateTo !== '' ? $dateTo : sprintf('%04d-12-31', $year)),
+        ];
+    }
+
+    return [
+        'start' => sprintf('%04d-01-01', $year),
+        'end' => sprintf('%04d-12-31', $year),
+        'label' => (string)$year,
+    ];
+}
+
+function build_csv_filename(string $type, int $year, string $dateFrom = '', string $dateTo = ''): string
+{
+    $prefixes = [
+        'sales' => 'agleef_sales',
+        'expenses' => 'agleef_expenses',
+        'diaries' => 'agleef_diaries',
+        'annual_summary' => 'agleef_annual_summary',
+        'finance_all' => 'agleef_finance_all',
+    ];
+
+    $base = $prefixes[$type] ?? 'agleef_export';
+    $range = get_export_date_range($year, $dateFrom, $dateTo);
+
+    return $base . '_' . $range['label'] . '.csv';
+}
+
+function output_csv_download(string $filename, array $rows, string $encoding = 'utf8_bom'): void
+{
+    $encoding = $encoding === 'sjis' ? 'sjis' : 'utf8_bom';
+
+    header('Content-Type: text/csv; charset=' . ($encoding === 'sjis' ? 'Shift_JIS' : 'UTF-8'));
+    header('Content-Disposition: attachment; filename="' . str_replace('"', '', $filename) . '"');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Pragma: no-cache');
+
+    if ($encoding === 'utf8_bom') {
+        echo "\xEF\xBB\xBF";
+    }
+
+    $output = fopen('php://output', 'w');
+    if ($output === false) {
+        throw new RuntimeException('CSV出力ストリームを開けませんでした。');
+    }
+
+    foreach ($rows as $row) {
+        $csvRow = array_map(static function (mixed $value) use ($encoding): string|int|float {
+            $sanitized = sanitize_csv_cell($value);
+            if ($encoding === 'sjis' && is_string($sanitized)) {
+                return mb_convert_encoding($sanitized, 'SJIS-win', 'UTF-8');
+            }
+            return $sanitized;
+        }, $row);
+        fputcsv($output, $csvRow);
+    }
+
+    fclose($output);
+    exit;
+}

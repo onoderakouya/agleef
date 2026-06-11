@@ -369,3 +369,78 @@ sqlite3 database.sqlite "PRAGMA foreign_key_check;"
 
 ### 注意事項
 この年間集計は、入力済みデータをもとにした申告準備・経営把握のための簡易集計です。複式簿記、仕訳、消費税・インボイス、減価償却、家事按分などの厳密な会計・税務処理は行いません。税務上の判断は税理士・税務署等へ確認してください。
+
+## 12. CSV出力機能（第4段階MVP）
+
+確定申告準備、Excelでの確認、税理士への共有、会計ソフトへの取り込み準備、バックアップ保存に使えるよう、ログイン中ユーザーのデータだけをCSVでダウンロードできる機能を追加しています。本格的な会計ソフト連携、複式簿記、仕訳、消費税・インボイス・減価償却などの厳密な税務処理はこの段階では対象外です。税務上の判断は税理士・税務署等へ確認してください。
+
+### 追加ファイル
+
+- `export.php`: CSV出力メニュー画面
+- `export_csv.php`: CSVダウンロード処理
+
+### 出力できるCSV
+
+- 売上CSV（`sales` / `crops` / `fields`）
+- 経費CSV（`expenses` / `expense_categories` / `crops` / `fields`）
+- 日誌CSV（`diaries` / `crops` / `fields`）
+- 年間集計CSV（年間サマリー、月別、経費カテゴリ別、販売経路別、作物別、圃場別）
+- 売上・経費まとめCSV（売上と経費を日付順に並べた簡易出納帳形式）
+
+### 使い方
+
+1. ログインします。
+2. ヘッダーまたはダッシュボードの「CSV出力」へ移動します。
+3. 出力対象、対象年、任意の開始日・終了日、文字コードを選択します。
+4. 「CSVをダウンロード」を押します。
+
+開始日または終了日を指定した場合、売上・経費・日誌・売上経費まとめCSVでは期間指定を優先します。年間集計CSVは対象年のみで集計します。
+
+### セキュリティと文字化け対策
+
+- 未ログインユーザーは `export.php` / `export_csv.php` を利用できません。
+- CSV出力SQLはセッションの `user_id` を条件にし、ログイン中ユーザーのデータだけを出力します。
+- `type` / `year` / `date_from` / `date_to` / `encoding` はバリデーションします。
+- SQLはPDOの `prepare()` を使います。
+- Excelで開きやすいよう、文字コードは「UTF-8 BOM付き」と「Shift_JIS」を選べます。
+- CSVインジェクション対策として、文字列セルが `=` / `+` / `-` / `@` / `*` で始まる場合は先頭にシングルクォートを付けます。
+
+### ファイル名例
+
+- `agleef_sales_2026.csv`
+- `agleef_expenses_2026.csv`
+- `agleef_diaries_2026.csv`
+- `agleef_annual_summary_2026.csv`
+- `agleef_finance_all_2026.csv`
+- `agleef_sales_2026-06-01_2026-06-30.csv`
+
+### ローカルでの動作確認手順
+
+1. PHPの組み込みサーバーを起動します。
+   ```bash
+   php -S localhost:8000
+   ```
+2. ブラウザで `http://localhost:8000/login.php` を開き、ログインします。
+3. ダッシュボードまたはヘッダーから「CSV出力」を開きます。
+4. 売上、経費、日誌、年間集計、売上・経費まとめをそれぞれUTF-8 BOM付きでダウンロードします。
+5. 文字コードをShift_JISに変更し、同じCSVがダウンロードできることを確認します。
+6. 不正なURL例 `export_csv.php?type=invalid` や `export_csv.php?year=1999` にアクセスし、エラー表示で `export.php` に戻ることを確認します。
+7. ExcelでCSVを開き、日本語が文字化けしにくいこと、金額列が数値として扱いやすいことを確認します。
+
+### 本番サーバーへの反映手順
+
+1. `database.sqlite` と `assets/uploads/` をバックアップします。
+2. 追加・変更ファイル（`export.php`、`export_csv.php`、`dashboard.php`、`annual_summary.php`、`includes/header.php`、`includes/functions.php`、`assets/css/style.css`、`README.md`）を本番サーバーへ配置します。
+3. 新しいテーブルは不要なため、CSV出力機能用のmigration実行は不要です。
+4. 本番環境でログインし、CSV出力ページから各CSVをダウンロードできることを確認します。
+5. HTTPS、セッションCookie設定、DBバックアップ運用を必要に応じて確認してください。
+
+### 想定されるエラーと対処法
+
+- CSVダウンロード時にログイン画面へ戻る: セッションが切れています。再ログインしてください。
+- `文字コードが正しくありません。` と表示される: `encoding` は `utf8_bom` または `sjis` を指定してください。
+- `出力対象が正しくありません。` と表示される: `type` は `sales` / `expenses` / `diaries` / `annual_summary` / `finance_all` のいずれかを指定してください。
+- `対象年は2000年から...` と表示される: 対象年は2000年から現在年+1年までで指定してください。
+- Excelで文字化けする: まず「UTF-8 BOM付き」を試し、環境によっては「Shift_JIS」を選んで再ダウンロードしてください。
+- CSVにデータが出ない: 対象年または開始日・終了日の範囲に、ログイン中ユーザーのデータがあるか確認してください。
+- `Call to undefined function mb_convert_encoding()`: PHPのmbstring拡張が無効です。本番サーバーでmbstringを有効化してください。

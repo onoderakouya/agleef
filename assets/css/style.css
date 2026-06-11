@@ -822,3 +822,49 @@ button:disabled,
     font-size: 1.35rem;
   }
 }
+
+.export-hero .annual-note {
+  margin-top: 14px;
+}
+
+.export-form {
+  margin-top: 12px;
+}
+
+.export-form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.export-form-grid label {
+  font-weight: 700;
+}
+
+.export-actions {
+  margin-top: 18px;
+}
+
+.export-note-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.export-note-list li {
+  margin-bottom: 8px;
+}
+
+.annual-export-actions {
+  margin-top: 14px;
+}
+
+@media (max-width: 767px) {
+  .export-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-actions .btn,
+  .annual-export-actions .btn {
+    width: 100%;
+  }
+}
