@@ -512,3 +512,143 @@ sqlite3 database.sqlite "PRAGMA foreign_key_check;"
 - Excelで文字化けする: まず「UTF-8 BOM付き」を試し、環境によっては「Shift_JIS」を選んで再ダウンロードしてください。
 - CSVにデータが出ない: 対象年または開始日・終了日の範囲に、ログイン中ユーザーのデータがあるか確認してください。
 - `Call to undefined function mb_convert_encoding()`: PHPのmbstring拡張が無効です。本番サーバーでmbstringを有効化してください。
+
+## 14. 管理者機能（ユーザー管理MVP）
+
+運営者だけが登録者数と登録ユーザー概要を確認できる管理者専用画面を追加しています。一般ユーザーには管理画面リンクを表示せず、直接URLを入力しても `require_admin()` でブロックします。
+
+### 追加・変更ファイル
+
+- `admin_dashboard.php`: 管理者用ダッシュボード。総登録ユーザー数、今日・今月の登録数、管理者数、一般ユーザー数、最新登録ユーザー5件を表示します。
+- `admin_users.php`: 登録ユーザー一覧。ユーザー名検索、管理者/一般ユーザー絞り込み、簡易ページネーション、利用件数概要を表示します。
+- `admin_user_detail.php`: 特定ユーザーの基本情報、利用件数、経費合計、売上合計、最新日誌・経費・売上5件の概要を表示します。
+- `migrations/add_is_admin_to_users.sql`: 既存DBへ `users.is_admin` を追加するmigrationです。
+- `schema.sql`: 新規インストール時の `users` テーブルに `is_admin` を追加しています。
+- `includes/auth.php`: `current_user_is_admin()` と `require_admin()` を追加しています。
+- `login.php`: ログイン時に `is_admin` をセッションへ保存します。
+- `includes/header.php` / `dashboard.php`: 管理者だけに「管理画面」導線を表示します。
+- `assets/css/style.css`: 管理者画面用のカード、バッジ、テーブル、ページネーション表示を追加しています。
+
+### DB設計の変更内容
+
+`users` テーブルに以下のカラムを追加しました。
+
+```sql
+is_admin INTEGER NOT NULL DEFAULT 0
+```
+
+- `0`: 一般ユーザー
+- `1`: 管理者
+
+新規インストールでは `schema.sql` により最初から `is_admin` カラムが作成されます。既存DBでは下記migrationを実行してください。
+
+```sql
+ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
+```
+
+SQLiteでは同じカラムを二重追加すると `duplicate column name: is_admin` エラーになります。migration実行前に以下でカラム有無を確認してください。
+
+```bash
+sqlite3 database.sqlite "PRAGMA table_info(users);"
+```
+
+すでに `is_admin` が表示されている場合、`migrations/add_is_admin_to_users.sql` は再実行しないでください。アプリ起動時の `includes/db.php` も不足カラムを補正しますが、本番ではバックアップ後にmigrationを明示実行する運用を推奨します。
+
+### 運営者アカウントを管理者化するSQL
+
+まずユーザー名を確認します。
+
+```bash
+sqlite3 database.sqlite "SELECT id, username, is_admin, created_at FROM users ORDER BY id;"
+```
+
+運営者アカウントの `username` に置き換えて、以下を実行します。
+
+```sql
+UPDATE users SET is_admin = 1, updated_at = CURRENT_TIMESTAMP WHERE username = 'kouya';
+```
+
+`username` は環境によって異なります。必ず実DBの運営者アカウント名に置き換えてください。反映後は以下で確認します。
+
+```bash
+sqlite3 database.sqlite "SELECT id, username, is_admin FROM users WHERE is_admin = 1;"
+```
+
+### 管理者専用アクセス制御
+
+- 管理者ページ（`admin_dashboard.php` / `admin_users.php` / `admin_user_detail.php`）は先頭で `require_admin()` を呼び出します。
+- 未ログインの場合は `login.php` にリダイレクトします。
+- ログイン済みでも `is_admin = 0` の場合は `dashboard.php` にリダイレクトし、「管理者権限が必要です。」と表示します。
+- `current_user_is_admin()` はセッションだけを信用せず、DBの現在値を確認してから判定します。
+- 管理画面では `password_hash` をSELECTせず、画面にも表示しません。生のパスワードも扱いません。
+
+### ローカルDBへの反映手順
+
+1. DBをバックアップします。
+   ```bash
+   cp database.sqlite database.sqlite.bak
+   ```
+2. `is_admin` カラムがないことを確認します。
+   ```bash
+   sqlite3 database.sqlite "PRAGMA table_info(users);"
+   ```
+3. カラムが未追加の場合だけmigrationを実行します。
+   ```bash
+   sqlite3 database.sqlite < migrations/add_is_admin_to_users.sql
+   ```
+4. 運営者アカウントを管理者にします（`kouya` は実際のユーザー名へ置換）。
+   ```bash
+   sqlite3 database.sqlite "UPDATE users SET is_admin = 1, updated_at = CURRENT_TIMESTAMP WHERE username = 'kouya';"
+   ```
+5. 反映を確認します。
+   ```bash
+   sqlite3 database.sqlite "SELECT id, username, is_admin FROM users ORDER BY id;"
+   ```
+6. PHPの組み込みサーバーを起動して動作確認します。
+   ```bash
+   php -S localhost:8000
+   ```
+
+### 本番サーバーへの反映手順
+
+1. `database.sqlite`、アプリ一式、`assets/uploads/` をバックアップします。
+2. 追加・変更ファイルを本番へ配置します。
+   - `admin_dashboard.php`
+   - `admin_users.php`
+   - `admin_user_detail.php`
+   - `migrations/add_is_admin_to_users.sql`
+   - `schema.sql`
+   - `includes/auth.php`
+   - `includes/db.php`
+   - `includes/header.php`
+   - `login.php`
+   - `dashboard.php`
+   - `assets/css/style.css`
+   - `README.md`
+3. 本番DBで `PRAGMA table_info(users);` を実行し、`is_admin` が未追加の場合だけmigrationを実行します。
+4. 運営者アカウントの `username` を確認し、`UPDATE users SET is_admin = 1 ...` を実行します。
+5. HTTPS環境で管理者ログインし、管理画面リンクと各管理者ページを確認します。
+6. 一般ユーザーでもログインし、管理画面リンクが表示されず、直接URLアクセスもブロックされることを確認します。
+
+### 動作確認手順
+
+1. `sqlite3 database.sqlite "PRAGMA table_info(users);"` で `is_admin` カラムがあることを確認します。
+2. `sqlite3 database.sqlite "SELECT id, username, is_admin FROM users;"` で運営者アカウントの `is_admin` を `1` にできていることを確認します。
+3. 管理者でログインし、ヘッダーとダッシュボードに「管理画面」リンクが表示されることを確認します。
+4. 一般ユーザーでログインし、「管理画面」リンクが表示されないことを確認します。
+5. 管理者で `admin_dashboard.php` を開けることを確認します。
+6. 一般ユーザーで `admin_dashboard.php` に直接アクセスし、`dashboard.php` へ戻されることを確認します。
+7. 未ログイン状態で `admin_dashboard.php` にアクセスし、`login.php` へ戻されることを確認します。
+8. 管理者で登録ユーザー数、ユーザー一覧、ユーザー詳細概要を確認します。
+9. 画面内に `password_hash` や平文パスワードが表示されないことを確認します。
+10. `admin_users.php` でユーザー名検索と管理者/一般ユーザー絞り込みができることを確認します。
+11. 既存のログイン、日誌、作物、圃場、経費、売上、年間集計、CSV出力の主要操作が壊れていないことを確認します。
+
+### 想定されるエラーと対処法
+
+- `duplicate column name: is_admin`: すでに `is_admin` が追加済みです。`PRAGMA table_info(users);` で確認し、migrationを再実行しないでください。
+- 管理者でログインしても管理画面リンクが出ない: 運営者アカウントの `is_admin` が `1` になっているか確認し、再ログインしてください。
+- 一般ユーザーが管理画面へ入れない代わりにダッシュボードへ戻される: 正常なアクセス制御です。
+- `no such column: is_admin`: 本番DBにmigrationが未実行です。バックアップ後、`migrations/add_is_admin_to_users.sql` を1回だけ実行してください。
+- 管理者ページでユーザーが見つからない: `admin_user_detail.php?user_id=...` のIDが存在しません。ユーザー一覧から詳細を開き直してください。
+- DB書き込みエラー: Webサーバー実行ユーザーが `database.sqlite` と配置ディレクトリに読み書きできるか確認してください。

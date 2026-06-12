@@ -43,6 +43,16 @@ include __DIR__ . '/includes/header.php';
   </div>
 </section>
 
+<?php if (current_user_is_admin()): ?>
+<section class="card admin-hero">
+  <h3>運営者メニュー</h3>
+  <p class="description">管理者権限を持つユーザーだけに表示されます。</p>
+  <div class="button-row">
+    <a class="btn primary" href="admin_dashboard.php">管理画面へ</a>
+  </div>
+</section>
+<?php endif; ?>
+
 <section class="card">
   <h3>メニュー</h3>
   <div class="button-row dashboard-actions">
