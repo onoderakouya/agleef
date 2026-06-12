@@ -6,7 +6,7 @@
   --main: #2f855a;
   --brand: #2f8f3a;
   --danger: #c0392b;
-  --content-width: 1160px;
+  --content-width: 1280px;
 }
 
 * { box-sizing: border-box; }
@@ -31,25 +31,15 @@ body {
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
-  z-index: 5;
+  z-index: 1000;
 }
 
 .nav-wrap {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   padding: 12px 0;
-}
-
-.site-header nav {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
 }
 
 .site-header a {
@@ -60,6 +50,112 @@ body {
 .site-header h1 {
   flex: 0 0 auto;
   margin: 0;
+}
+
+.main-nav {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nav-link,
+.nav-dropdown-toggle,
+.nav-menu-toggle {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #edf2ef;
+  color: #0f1f16;
+  padding: 9px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-dropdown-toggle:hover,
+.nav-dropdown-toggle:focus-visible,
+.nav-menu-toggle:hover,
+.nav-menu-toggle:focus-visible {
+  background: #e1eee7;
+  border-color: #bdd7c8;
+  color: #12351f;
+  outline: none;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1100;
+  display: none;
+  min-width: 190px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(31, 42, 36, 0.14);
+}
+
+.nav-dropdown-menu-right {
+  right: 0;
+  left: auto;
+}
+
+.nav-dropdown-menu a {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.nav-dropdown-menu a:hover,
+.nav-dropdown-menu a:focus-visible {
+  background: #eef8f1;
+  color: var(--main);
+  outline: none;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu,
+.nav-dropdown.is-open .nav-dropdown-menu {
+  display: block;
+}
+
+.logout-link {
+  background: var(--danger);
+  color: #fff !important;
+}
+
+.logout-link:hover,
+.logout-link:focus-visible {
+  background: #a93226;
+  color: #fff !important;
+}
+
+.nav-menu-toggle {
+  display: none;
 }
 
 .brand {
@@ -325,19 +421,61 @@ th { font-size: 0.92rem; color: #425248; }
   body { font-size: 16px; }
   .layout,
   .container { width: 100%; padding: 0 14px; }
-  .nav-wrap { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .site-header nav {
-    width: 100%;
+  .nav-wrap {
+    flex-direction: row;
+    align-items: center;
     flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 8px;
+    gap: 10px;
+  }
+  .brand-heading {
+    min-width: 0;
   }
   .brand {
     max-width: 100%;
+    white-space: normal;
   }
   .brand-title { font-size: 1.08rem; }
   .brand-subtitle { font-size: 0.72rem; }
-  .site-header nav a { white-space: normal; }
+  .nav-menu-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+  .main-nav {
+    display: none;
+    flex: 1 1 100%;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 4px;
+  }
+  .main-nav.is-open {
+    display: flex;
+  }
+  .nav-link,
+  .nav-dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+    padding: 11px 12px;
+    min-height: 44px;
+    white-space: normal;
+  }
+  .nav-dropdown-menu {
+    position: static;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-top: 6px;
+    padding: 6px 6px 6px 16px;
+    border-radius: 10px;
+    box-shadow: none;
+    background: #fbfdfc;
+  }
+  .nav-dropdown-menu a {
+    padding: 9px 10px;
+    white-space: normal;
+  }
   .site-header .btn { white-space: nowrap; }
   .small { padding: 10px 12px; font-size: 0.94rem; min-height: 42px; }
 
