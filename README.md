@@ -19,6 +19,7 @@
   /assets
     /css
       style.css
+      lp.css
     /js
       app.js
   /includes
@@ -30,7 +31,7 @@
   /migrations
     20260319_add_crop_field_to_diaries.sql
     add_photo_path_to_diaries.sql
-  index.php
+  index.php              # 未ログインでも閲覧できるランディングページ
   login.php
   register.php
   logout.php
@@ -86,7 +87,18 @@
 
 `crop_id` と `field_id` は、過去データを安全に残すためDB上は NULL 許容です。画面では新規作成・編集時に「作物」「圃場」を必須選択にしています。
 
-## 4. セットアップ手順（ローカル）
+
+## 4. 公開ランディングページ
+
+`index.php` は未ログインユーザーでも閲覧できる公開LPです。`require_login()` は呼び出さず、セッション状態だけを確認して、ログイン中の場合は「ダッシュボードへ」の導線を表示します。
+
+- 表示URL例: `https://honocca.com/agleef/`
+- LP専用CSS: `assets/css/lp.css`
+- 新規登録導線: `register.php`
+- ログイン導線: `login.php`
+- ログイン中ユーザー向け導線: `dashboard.php`
+
+## 5. セットアップ手順（ローカル）
 
 1. DB初期化
 ```bash
@@ -106,7 +118,7 @@ php -S 0.0.0.0:8000
 - ユーザー名: `demo`
 - パスワード: `password`
 
-## 5. 既存DBの migration 手順
+## 6. 既存DBの migration 手順
 
 既存の `database.sqlite` に `diaries.crop_id` / `diaries.field_id` を追加する場合は、SQLite の外部キー制約追加の制限を避けるため、テーブルを作り直す migration を使います。
 
@@ -143,7 +155,7 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 
 `photo_path` がすでに表示されている場合、`migrations/add_photo_path_to_diaries.sql` は実行しないでください。
 
-## 6. MVP機能
+## 7. MVP機能
 - 新規ユーザー登録（`ALLOW_REGISTRATION` による受付停止、CSRFトークン検証、パスワードハッシュ化）
 - ログイン / ログアウト
 - 作物マスタ管理（登録・編集・削除）
@@ -157,7 +169,7 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 - パスワード変更（現在のパスワード確認・8文字以上・確認入力・CSRFトークン検証）
 
 
-## 7. アカウント管理
+## 8. アカウント管理
 
 ログイン後、ヘッダーの「アカウント」またはダッシュボードの「アカウント情報を確認する」から、自分のアカウント情報を確認できます。
 
@@ -175,7 +187,7 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 ユーザー情報の取得・更新はGETパラメータではなく、必ずセッションの `user_id` を使用します。更新成功時は `users.updated_at` を更新し、ユーザー名変更時はセッション内の `username` も更新します。
 
 
-## 8. 新規ユーザー登録
+## 9. 新規ユーザー登録
 
 `login.php` の「新規登録はこちら」から `register.php` に移動し、一般ユーザーが自分でアカウントを作成できます。
 
