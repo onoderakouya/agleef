@@ -94,15 +94,6 @@ body {
   padding: 20px 0 30px;
 }
 
-.badge {
-  background: #e8f6ee;
-  color: #1f6b46;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
 main {
   padding: 16px 0 52px;
 }

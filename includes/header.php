@@ -21,7 +21,6 @@ $pageTitle = $pageTitle ?? APP_NAME;
     </h1>
     <nav>
       <?php if (is_logged_in()): ?>
-        <a class="badge" href="account.php">こんにちは、<?= e(current_user_name()) ?> さん</a>
         <a class="btn small" href="dashboard.php">ダッシュボード</a>
         <a class="btn small" href="diary_list.php">日誌一覧</a>
         <a class="btn small" href="crops.php">作物管理</a>
