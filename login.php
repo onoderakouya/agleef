@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
-    $stmt = db()->prepare('SELECT id, username, password_hash FROM users WHERE username = :username LIMIT 1');
+    $stmt = db()->prepare('SELECT id, username, password_hash, is_admin FROM users WHERE username = :username LIMIT 1');
     $stmt->execute([':username' => $username]);
     $user = $stmt->fetch();
 
@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['is_admin'] = (int)$user['is_admin'];
         set_flash('success', 'ログインしました。');
         redirect('dashboard.php');
     }

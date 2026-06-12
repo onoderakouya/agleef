@@ -26,6 +26,7 @@ function initialize_database(PDO $pdo): void
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
+            is_admin INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )'
@@ -53,6 +54,11 @@ function ensure_users_table(PDO $pdo): void
 {
     $columns = $pdo->query('PRAGMA table_info(users)')->fetchAll();
     $columnNames = array_map(static fn(array $col): string => $col['name'], $columns);
+
+    if (!in_array('is_admin', $columnNames, true)) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
+        $columnNames[] = 'is_admin';
+    }
 
     if (!in_array('updated_at', $columnNames, true)) {
         $pdo->exec('ALTER TABLE users ADD COLUMN updated_at TEXT');
