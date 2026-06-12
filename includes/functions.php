@@ -76,6 +76,11 @@ function verify_csrf_token(?string $token): bool
         && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function is_registration_allowed(): bool
+{
+    return defined('ALLOW_REGISTRATION') && ALLOW_REGISTRATION === true;
+}
+
 
 function get_query_param(string $key, string $default = ''): string
 {

@@ -859,3 +859,44 @@ button:disabled,
     width: 100%;
   }
 }
+
+.auth-card {
+  box-shadow: 0 10px 30px rgba(31, 42, 36, 0.06);
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+  min-height: 52px;
+}
+
+.auth-actions > button,
+.auth-actions > .btn {
+  flex: 1 1 190px;
+}
+
+.auth-links {
+  margin: 18px 0 8px;
+  padding: 16px;
+  text-align: center;
+  background: #f8fbf9;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.auth-links p {
+  margin: 0 0 8px;
+  color: #43544b;
+  font-weight: 700;
+}
+
+.auth-links a {
+  color: var(--main);
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .auth-actions > button,
+  .auth-actions > .btn {
+    flex: 1 1 100%;
+  }
+}
