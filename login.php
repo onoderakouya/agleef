@@ -49,6 +49,13 @@ include __DIR__ . '/includes/header.php';
     <button type="submit" class="primary">ログイン</button>
   </form>
 
+  <?php if (is_registration_allowed()): ?>
+    <div class="auth-links">
+      <p>アカウントをお持ちでない方</p>
+      <a href="register.php">新規登録はこちら</a>
+    </div>
+  <?php endif; ?>
+
   <p class="description">デモ用: <code>demo</code> / <code>password</code></p>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
