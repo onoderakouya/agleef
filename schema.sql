@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- crops: 作物マスタを管理するテーブル
 -- 役割: 「何を育てたか」を候補から選べるようにする
 -- =========================================================
-CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users(lower(email)) WHERE email <> '';
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE);
 
 CREATE TABLE IF NOT EXISTS crops (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

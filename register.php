@@ -12,6 +12,7 @@ $email = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim((string)($_POST['username'] ?? ''));
     $email = trim((string)($_POST['email'] ?? ''));
+    $email = function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     $password = (string)($_POST['password'] ?? '');
     $passwordConfirmation = (string)($_POST['password_confirmation'] ?? '');
 

@@ -67,7 +67,7 @@ function ensure_users_table(PDO $pdo): void
         $columnNames[] = 'email';
     }
 
-    $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users(lower(email)) WHERE email <> ''");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE)");
 
     if (!in_array('updated_at', $columnNames, true)) {
         $pdo->exec('ALTER TABLE users ADD COLUMN updated_at TEXT');

@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $newUsername = trim((string)($_POST['username'] ?? ''));
     $newEmail = trim((string)($_POST['email'] ?? ''));
+    $newEmail = function_exists('mb_strtolower') ? mb_strtolower($newEmail, 'UTF-8') : strtolower($newEmail);
     $currentPassword = (string)($_POST['current_password'] ?? '');
     $usernameLength = function_exists('mb_strlen') ? mb_strlen($newUsername, 'UTF-8') : strlen($newUsername);
     $emailLength = function_exists('mb_strlen') ? mb_strlen($newEmail, 'UTF-8') : strlen($newEmail);
