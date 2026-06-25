@@ -656,19 +656,16 @@ input[type="number"] {
   margin: 16px 0;
 }
 
-
 .category-summary-header {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 14px;
 }
-
 .category-summary-header h3,
 .category-summary-header p {
   margin: 0;
 }
-
 .category-summary-header p {
   color: #607268;
   font-size: 0.94rem;
@@ -683,11 +680,13 @@ input[type="number"] {
 }
 
 .category-pie-chart {
-  width: min(100%, 220px);
-  aspect-ratio: 1;
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: 220px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  box-shadow: inset 0 0 0 18px #fff, 0 8px 22px rgba(31, 42, 36, 0.08);
+  box-shadow: 0 8px 22px rgba(31, 42, 36, 0.08);
 }
 
 .category-chart-legend,
