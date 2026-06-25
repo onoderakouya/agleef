@@ -99,6 +99,23 @@ $categoryStmt = db()->prepare('SELECT COALESCE(ec.name, "未分類") AS category
     ORDER BY total_amount DESC, category_name ASC');
 $categoryStmt->execute($params);
 $categoryTotals = $categoryStmt->fetchAll();
+$categoryChartColors = ['#2f855a', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#ec4899', '#64748b'];
+$categoryChartSegments = [];
+$categoryChartPosition = 0.0;
+if ($total > 0) {
+    foreach ($categoryTotals as $index => $row) {
+        $amount = (int)$row['total_amount'];
+        if ($amount <= 0) {
+            continue;
+        }
+        $percentage = ($amount / $total) * 100;
+        $nextPosition = $categoryChartPosition + $percentage;
+        $color = $categoryChartColors[$index % count($categoryChartColors)];
+        $categoryChartSegments[] = sprintf('%s %.4F%% %.4F%%', $color, $categoryChartPosition, $nextPosition);
+        $categoryChartPosition = $nextPosition;
+    }
+}
+$categoryChartStyle = $categoryChartSegments ? 'background: conic-gradient(' . implode(', ', $categoryChartSegments) . ');' : '';
 
 $hasSearchCondition = $dateFrom !== '' || $dateTo !== '' || $categoryId !== '' || $cropId !== '' || $fieldId !== '' || $keyword !== '';
 
@@ -166,8 +183,30 @@ include __DIR__ . '/includes/header.php';
 
   <?php if ($categoryTotals): ?>
     <div class="category-summary">
-      <h3>カテゴリ別合計（表示条件内）</h3>
-      <ul>
+      <div class="category-summary-header">
+        <h3>カテゴリ別合計（表示条件内）</h3>
+        <p>表示中の合計に対する経費カテゴリごとの割合を確認できます。</p>
+      </div>
+      <?php if ($categoryChartStyle !== ''): ?>
+        <div class="category-chart-wrap">
+          <div class="category-pie-chart" style="<?= e($categoryChartStyle) ?>" role="img" aria-label="経費カテゴリ別割合の円グラフ"></div>
+          <ul class="category-chart-legend">
+            <?php foreach ($categoryTotals as $index => $row): ?>
+              <?php
+                $amount = (int)$row['total_amount'];
+                $percentage = $total > 0 ? ($amount / $total) * 100 : 0;
+                $color = $categoryChartColors[$index % count($categoryChartColors)];
+              ?>
+              <li>
+                <span class="category-color" style="background-color: <?= e($color) ?>;"></span>
+                <span class="category-name"><?= e($row['category_name']) ?></span>
+                <strong><?= e(number_format($percentage, 1)) ?>%</strong>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+      <?php endif; ?>
+      <ul class="category-total-list">
         <?php foreach ($categoryTotals as $row): ?>
           <li><span><?= e($row['category_name']) ?></span><strong><?= e(format_yen((int)$row['total_amount'])) ?></strong></li>
         <?php endforeach; ?>
