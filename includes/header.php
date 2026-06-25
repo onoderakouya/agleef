@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 $pageTitle = $pageTitle ?? APP_NAME;
+$currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -71,7 +72,9 @@ $pageTitle = $pageTitle ?? APP_NAME;
         <a class="nav-link logout-link" href="logout.php">ログアウト</a>
       <?php else: ?>
         <a class="nav-link" href="contact.php">お問い合わせ</a>
-        <a class="btn small primary" href="login.php">ログイン</a>
+        <?php if ($currentPage !== 'login.php'): ?>
+          <a class="btn small primary" href="login.php">ログイン</a>
+        <?php endif; ?>
       <?php endif; ?>
     </nav>
   </div>
