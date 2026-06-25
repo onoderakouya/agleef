@@ -7,11 +7,13 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
   password_hash TEXT NOT NULL,
   is_admin INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CHECK (length(trim(username)) BETWEEN 3 AND 50),
+  CHECK (email = '' OR (length(trim(email)) BETWEEN 3 AND 255 AND instr(email, '@') > 1)),
   CHECK (length(password_hash) >= 20),
   UNIQUE (username)
 );
@@ -20,6 +22,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- crops: 作物マスタを管理するテーブル
 -- 役割: 「何を育てたか」を候補から選べるようにする
 -- =========================================================
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE);
+
 CREATE TABLE IF NOT EXISTS crops (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,

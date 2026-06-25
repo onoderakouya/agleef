@@ -10,7 +10,7 @@ if ($userIdParam === '' || !ctype_digit($userIdParam) || (int)$userIdParam <= 0)
 $targetUserId = (int)$userIdParam;
 $pdo = db();
 
-$userStmt = $pdo->prepare('SELECT id, username, is_admin, created_at, updated_at FROM users WHERE id = :id LIMIT 1');
+$userStmt = $pdo->prepare('SELECT id, username, email, is_admin, created_at, updated_at FROM users WHERE id = :id LIMIT 1');
 $userStmt->execute([':id' => $targetUserId]);
 $user = $userStmt->fetch();
 
@@ -114,6 +114,7 @@ include __DIR__ . '/includes/header.php';
   <dl class="detail-grid admin-detail-grid">
     <dt>ユーザーID</dt><dd><?= e((string)$user['id']) ?></dd>
     <dt>ユーザー名</dt><dd><?= e($user['username']) ?></dd>
+    <dt>メールアドレス</dt><dd><?= e($user['email'] ?? '-') ?></dd>
     <dt>権限</dt><dd><span class="badge <?= ((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user' ?>"><?= ((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー' ?></span></dd>
     <dt>登録日時</dt><dd><?= e($user['created_at']) ?></dd>
     <dt>更新日時</dt><dd><?= e($user['updated_at'] ?? '-') ?></dd>

@@ -16,7 +16,7 @@ $offset = ($page - 1) * $perPage;
 $where = [];
 $params = [];
 if ($keyword !== '') {
-    $where[] = 'u.username LIKE :keyword';
+    $where[] = '(u.username LIKE :keyword OR u.email LIKE :keyword)';
     $params[':keyword'] = '%' . $keyword . '%';
 }
 if ($role === 'admin') {
@@ -38,6 +38,7 @@ if ($page > $totalPages) {
 $sql = "SELECT
             u.id,
             u.username,
+            u.email,
             u.is_admin,
             u.created_at,
             u.updated_at,
@@ -87,8 +88,8 @@ include __DIR__ . '/includes/header.php';
   <form method="get" class="search-form">
     <div class="filter-grid">
       <label>
-        ユーザー名検索
-        <input type="text" name="q" value="<?= e($keyword) ?>" placeholder="ユーザー名の一部">
+        ユーザー検索
+        <input type="text" name="q" value="<?= e($keyword) ?>" placeholder="ユーザー名またはメールアドレスの一部">
       </label>
       <label>
         権限
@@ -115,6 +116,7 @@ include __DIR__ . '/includes/header.php';
         <tr>
           <th>ID</th>
           <th>ユーザー名</th>
+          <th>メールアドレス</th>
           <th>権限</th>
           <th>登録日時</th>
           <th>更新日時</th>
@@ -128,12 +130,13 @@ include __DIR__ . '/includes/header.php';
       </thead>
       <tbody>
         <?php if ($users === []): ?>
-          <tr><td colspan="11">条件に一致するユーザーはいません。</td></tr>
+          <tr><td colspan="12">条件に一致するユーザーはいません。</td></tr>
         <?php endif; ?>
         <?php foreach ($users as $user): ?>
           <tr>
             <td data-label="ID"><?= e((string)$user['id']) ?></td>
             <td data-label="ユーザー名"><?= e($user['username']) ?></td>
+            <td data-label="メールアドレス"><?= e($user['email'] ?? '-') ?></td>
             <td data-label="権限"><span class="badge <?= ((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user' ?>"><?= ((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー' ?></span></td>
             <td data-label="登録日時"><?= e($user['created_at']) ?></td>
             <td data-label="更新日時"><?= e($user['updated_at'] ?? '-') ?></td>

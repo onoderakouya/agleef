@@ -25,6 +25,7 @@ function initialize_database(PDO $pdo): void
         'CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL DEFAULT \'\',
             password_hash TEXT NOT NULL,
             is_admin INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,9 +43,10 @@ function initialize_database(PDO $pdo): void
     $stmt->execute([':username' => 'demo']);
 
     if ((int)$stmt->fetchColumn() === 0) {
-        $insert = $pdo->prepare('INSERT INTO users (username, password_hash) VALUES (:username, :password_hash)');
+        $insert = $pdo->prepare('INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)');
         $insert->execute([
             ':username' => 'demo',
+            ':email' => 'demo@example.com',
             ':password_hash' => password_hash('password', PASSWORD_DEFAULT),
         ]);
     }
@@ -59,6 +61,13 @@ function ensure_users_table(PDO $pdo): void
         $pdo->exec('ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0');
         $columnNames[] = 'is_admin';
     }
+
+    if (!in_array('email', $columnNames, true)) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''");
+        $columnNames[] = 'email';
+    }
+
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE)");
 
     if (!in_array('updated_at', $columnNames, true)) {
         $pdo->exec('ALTER TABLE users ADD COLUMN updated_at TEXT');
