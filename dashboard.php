@@ -68,6 +68,7 @@ include __DIR__ . '/includes/header.php';
     <a class="btn primary" href="export.php">CSV出力</a>
     <a class="btn" href="expense_category.php">経費カテゴリを管理する</a>
     <a class="btn" href="account.php">アカウント情報を確認する</a>
+    <a class="btn" href="contact.php">お問い合わせ・改善要望を送る</a>
   </div>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -38,6 +38,7 @@ include __DIR__ . '/includes/header.php';
   <p class="description">運営者専用の管理画面です。登録ユーザー数と最新登録ユーザーの概要を確認できます。</p>
   <div class="button-row">
     <a class="btn primary" href="admin_users.php">ユーザー一覧を見る</a>
+    <a class="btn primary" href="admin_contacts.php">お問い合わせ一覧を見る</a>
     <a class="btn" href="dashboard.php">通常ダッシュボードへ戻る</a>
   </div>
 </section>
