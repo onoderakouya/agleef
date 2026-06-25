@@ -153,6 +153,25 @@ CREATE TABLE IF NOT EXISTS sales (
 );
 
 -- =========================================================
+-- contact_requests: お問い合わせ・改善要望を保存するテーブル
+-- 役割: ユーザーの声を改良材料として蓄積する
+-- =========================================================
+CREATE TABLE IF NOT EXISTS contact_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  name TEXT NOT NULL,
+  email TEXT,
+  category TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  CHECK (length(trim(name)) BETWEEN 1 AND 100),
+  CHECK (email IS NULL OR length(trim(email)) <= 255),
+  CHECK (length(trim(category)) BETWEEN 1 AND 50),
+  CHECK (length(trim(message)) BETWEEN 1 AND 3000)
+);
+
+-- =========================================================
 -- インデックス設計
 -- =========================================================
 -- マスタ参照用（ユーザーごとの候補一覧を高速化）
@@ -177,3 +196,5 @@ CREATE INDEX IF NOT EXISTS idx_sales_field_id ON sales(field_id);
 CREATE INDEX IF NOT EXISTS idx_sales_channel ON sales(user_id, sales_channel);
 CREATE INDEX IF NOT EXISTS idx_sales_payment_status ON sales(user_id, payment_status);
 
+CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contact_requests_user_id ON contact_requests(user_id);

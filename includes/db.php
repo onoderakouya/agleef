@@ -38,6 +38,7 @@ function initialize_database(PDO $pdo): void
     ensure_diaries_table($pdo);
     ensure_expense_tables($pdo);
     ensure_sales_table($pdo);
+    ensure_contact_requests_table($pdo);
 
     $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username');
     $stmt->execute([':username' => 'demo']);
@@ -211,6 +212,28 @@ function ensure_diaries_table(PDO $pdo): void
     }
 }
 
+function ensure_contact_requests_table(PDO $pdo): void
+{
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS contact_requests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            name TEXT NOT NULL,
+            email TEXT,
+            category TEXT NOT NULL,
+            message TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+            CHECK (length(trim(name)) BETWEEN 1 AND 100),
+            CHECK (email IS NULL OR length(trim(email)) <= 255),
+            CHECK (length(trim(category)) BETWEEN 1 AND 50),
+            CHECK (length(trim(message)) BETWEEN 1 AND 3000)
+        )'
+    );
+
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at DESC)');
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_contact_requests_user_id ON contact_requests(user_id)');
+}
 
 function ensure_expense_tables(PDO $pdo): void
 {
