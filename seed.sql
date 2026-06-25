@@ -6,9 +6,9 @@ DELETE FROM fields;
 DELETE FROM users;
 
 -- テストユーザー（password: password）
-INSERT INTO users (username, password_hash) VALUES
-('demo', '$2y$12$mcycXrK5D0vCAh58IpXUJ.z5OEc.K5BWpI6fe2OxRbB.v2F5OwUZW'),
-('hanako', '$2y$12$mcycXrK5D0vCAh58IpXUJ.z5OEc.K5BWpI6fe2OxRbB.v2F5OwUZW');
+INSERT INTO users (username, email, password_hash) VALUES
+('demo', 'demo@example.com', '$2y$12$mcycXrK5D0vCAh58IpXUJ.z5OEc.K5BWpI6fe2OxRbB.v2F5OwUZW'),
+('hanako', 'hanako@example.com', '$2y$12$mcycXrK5D0vCAh58IpXUJ.z5OEc.K5BWpI6fe2OxRbB.v2F5OwUZW');
 
 -- 既存ページ互換のための作物/圃場マスタ
 INSERT INTO crops (user_id, name) VALUES
