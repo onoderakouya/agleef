@@ -34,14 +34,16 @@ foreach ($onboardingTables as $key => $table) {
     $countStmt->execute([':user_id' => $userId]);
     $onboardingCounts[$key] = (int)$countStmt->fetchColumn();
 }
+$hasViewedAnnualSummary = !empty($_SESSION['onboarding_' . $userId . '_annual_summary_viewed']);
+$hasViewedExport = !empty($_SESSION['onboarding_' . $userId . '_export_viewed']);
 $onboardingItems = [
     ['label' => '作物を登録する', 'href' => 'crops.php', 'done' => $onboardingCounts['crops'] > 0],
     ['label' => '圃場を登録する', 'href' => 'fields.php', 'done' => $onboardingCounts['fields'] > 0],
     ['label' => '日誌を登録する', 'href' => 'diary_create.php', 'done' => $onboardingCounts['diaries'] > 0],
     ['label' => '経費を登録する', 'href' => 'expense_create.php', 'done' => $onboardingCounts['expenses'] > 0],
     ['label' => '売上を登録する', 'href' => 'sale_create.php', 'done' => $onboardingCounts['sales'] > 0],
-    ['label' => '年間集計を見る', 'href' => 'annual_summary.php', 'done' => false],
-    ['label' => 'CSV出力を試す', 'href' => 'export.php', 'done' => false],
+    ['label' => '年間集計を見る', 'href' => 'annual_summary.php', 'done' => $hasViewedAnnualSummary],
+    ['label' => 'CSV出力を試す', 'href' => 'export.php', 'done' => $hasViewedExport],
 ];
 
 $pageTitle = 'ダッシュボード | ' . APP_NAME;

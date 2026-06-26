@@ -3,6 +3,7 @@ require_once __DIR__ . '/includes/auth.php';
 require_login();
 
 $userId = current_user_id();
+$_SESSION['onboarding_' . $userId . '_annual_summary_viewed'] = true;
 $selectedYear = get_selected_year();
 $yearRange = get_year_range();
 $startDate = sprintf('%04d-01-01', $selectedYear);
