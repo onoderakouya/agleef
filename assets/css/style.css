@@ -1225,3 +1225,42 @@ button:disabled,
 .legal-section li + li {
   margin-top: 6px;
 }
+
+/* Public guide / FAQ / legal pages */
+.eyebrow { color: var(--main); font-weight: 800; letter-spacing: 0.08em; margin: 0 0 8px; }
+.public-page { max-width: 1040px; margin: 20px auto; padding: 26px; }
+.public-hero { padding: 8px 0 18px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+.public-section { margin: 24px 0; }
+.public-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.public-card-grid--compact { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.info-card { border: 1px solid var(--line); border-radius: 14px; background: #fbfdfb; padding: 18px; }
+.info-card--wide { grid-column: 1 / -1; }
+.step-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; }
+.step-list li { display: flex; align-items: center; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font-weight: 700; }
+.step-list span { display: inline-grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border-radius: 999px; background: var(--main); color: #fff; }
+.notice-box-app { border: 1px solid #f0d36a; border-radius: 12px; background: #fff8df; color: #55440d; padding: 16px; margin: 18px 0; }
+.faq-list { display: grid; gap: 12px; }
+.faq-card { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 14px 16px; }
+.faq-card summary { cursor: pointer; color: #12351f; font-weight: 800; }
+.faq-card p { margin: 10px 0 0; color: #43544b; }
+.legal-page .legal-section { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.legal-page .legal-section:last-child { border-bottom: 0; }
+.auth-guide-links, .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; margin-top: 18px; }
+.auth-guide-links a, .footer-links a { color: var(--main); font-weight: 700; }
+.consent-note a { color: var(--main); font-weight: 800; }
+.beginner-card { border-color: #b9dbc7; background: linear-gradient(135deg, #ffffff 0%, #f1faf4 100%); }
+.onboarding-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+.onboarding-item { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text); text-decoration: none; font-weight: 700; }
+.onboarding-item:hover, .onboarding-item:focus-visible { border-color: #9cccaf; background: #f6fff8; outline: none; }
+.onboarding-item.is-complete { background: #eef8f1; }
+.onboarding-status { min-width: 20px; text-align: center; }
+.status-badge { border-radius: 999px; padding: 4px 9px; font-size: 0.78rem; font-weight: 800; }
+.status-badge.complete { background: #dff3e6; color: #1f6b3b; }
+.status-badge.incomplete { background: #edf2ef; color: #607268; }
+
+@media (max-width: 760px) {
+  .public-page { padding: 18px; }
+  .public-card-grid, .public-card-grid--compact, .step-list, .onboarding-checklist { grid-template-columns: 1fr; }
+  .onboarding-item { grid-template-columns: 24px 1fr; }
+  .status-badge { grid-column: 2; justify-self: start; }
+}

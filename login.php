@@ -64,5 +64,13 @@ include __DIR__ . '/includes/header.php';
   <?php endif; ?>
 
   <p class="description">デモ用: <code>demo</code> / <code>password</code></p>
+
+  <nav class="auth-guide-links" aria-label="ログイン前の案内リンク">
+    <a href="guide.php">使い方</a>
+    <a href="faq.php">よくある質問</a>
+    <a href="contact.php">お問い合わせ</a>
+    <a href="privacy.php">プライバシーポリシー</a>
+    <a href="terms.php">利用規約</a>
+  </nav>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>

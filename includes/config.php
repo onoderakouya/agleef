@@ -6,6 +6,7 @@ define('UPLOAD_DIR', __DIR__ . '/../assets/uploads');
 define('EXPENSE_UPLOAD_DIR', UPLOAD_DIR . '/expenses');
 define('SALE_UPLOAD_DIR', UPLOAD_DIR . '/sales');
 define('MAX_UPLOAD_SIZE', 3 * 1024 * 1024); // 3MB
+define('CONTACT_EMAIL', 'info@runfirm.net');
 
 // HTTPS enforcement.
 // ローカル開発環境（localhost / 127.0.0.1 など）は除外し、公開環境では常時HTTPSへ統一します。

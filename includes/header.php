@@ -62,6 +62,8 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
           </button>
           <div class="nav-dropdown-menu nav-dropdown-menu-right">
             <a href="account.php">アカウント</a>
+            <a href="guide.php">使い方</a>
+            <a href="faq.php">よくある質問</a>
             <a href="contact.php">お問い合わせ</a>
             <?php if (current_user_is_admin()): ?>
               <a href="admin_dashboard.php">管理画面</a>
@@ -71,6 +73,8 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 
         <a class="nav-link logout-link" href="logout.php">ログアウト</a>
       <?php else: ?>
+        <a class="nav-link" href="guide.php">使い方</a>
+        <a class="nav-link" href="faq.php">よくある質問</a>
         <a class="nav-link" href="contact.php">お問い合わせ</a>
         <?php if ($currentPage !== 'login.php'): ?>
           <a class="btn small primary" href="login.php">ログイン</a>

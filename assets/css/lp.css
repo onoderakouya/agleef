@@ -549,3 +549,10 @@ a {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* Public release navigation additions */
+.lp-footer__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 10px; }
+@media (max-width: 760px) {
+  .lp-nav { justify-content: flex-start; }
+  .lp-header__inner { align-items: flex-start; flex-direction: column; padding: 14px 0; }
+}
