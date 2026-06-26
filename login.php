@@ -6,6 +6,11 @@ if (is_logged_in()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        set_flash('error', '不正なリクエストです。');
+        redirect('login.php');
+    }
+
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -39,6 +44,7 @@ include __DIR__ . '/includes/header.php';
   <p class="description">ログインしてダッシュボードを表示します。</p>
 
   <form method="post" class="stack">
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
     <label>
       ユーザー名
       <input type="text" name="username" autocomplete="username" required>
