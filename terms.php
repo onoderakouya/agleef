@@ -1,70 +1,20 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-
+$contactEmail = defined('CONTACT_EMAIL') ? CONTACT_EMAIL : '';
 $pageTitle = '利用規約 | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
-<section class="card legal-page">
+<section class="card public-page legal-page">
   <h2>利用規約</h2>
-  <p class="description">この利用規約（以下「本規約」といいます。）は、AGLEEF-アグリーフ-（以下「本サービス」といいます。）の利用条件を定めるものです。利用者は、本サービスを利用することで本規約に同意したものとみなされます。</p>
-
-  <section class="legal-section">
-    <h3>第1条（適用）</h3>
-    <p>本規約は、利用者と本サービス運営者との間の本サービス利用に関わる一切の関係に適用されます。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第2条（利用登録）</h3>
-    <p>利用希望者は、本サービスの定める方法により利用登録を行います。登録情報に虚偽、誤記、不備がある場合、または運営者が不適切と判断した場合、登録を拒否または取り消すことがあります。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第3条（アカウント管理）</h3>
-    <p>利用者は、自己の責任でユーザー名、メールアドレス、パスワード等を管理するものとします。アカウント情報の管理不十分、使用上の過誤、第三者の使用等によって生じた損害について、運営者は責任を負いません。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第4条（禁止事項）</h3>
-    <p>利用者は、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
-    <ul>
-      <li>法令または公序良俗に違反する行為</li>
-      <li>第三者の権利、利益、名誉、信用、プライバシーを侵害する行為</li>
-      <li>不正アクセス、過度な負荷、脆弱性の探索等、本サービスの運営を妨げる行為</li>
-      <li>虚偽または不正確な情報を登録・送信する行為</li>
-      <li>本サービスを無断で商用利用、再販売、複製、改変する行為</li>
-      <li>その他、運営者が不適切と判断する行為</li>
-    </ul>
-  </section>
-
-  <section class="legal-section">
-    <h3>第5条（データの取り扱い）</h3>
-    <p>利用者が本サービスに入力・アップロードしたデータは、利用者自身の責任で管理するものとします。運営者は、サービス提供、保守、問い合わせ対応、不正利用防止等に必要な範囲でデータを取り扱います。個人情報の取り扱いについては、別途定めるプライバシーポリシーに従います。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第6条（サービス内容の変更・停止）</h3>
-    <p>運営者は、必要に応じて本サービスの内容を変更、追加、停止または終了することがあります。これにより利用者に生じた損害について、運営者は法令上認められる範囲で責任を負いません。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第7条（免責事項）</h3>
-    <p>本サービスは、農業日誌、売上、経費等の記録を補助するためのサービスです。入力内容の正確性、税務・会計上の判断、申告結果等について、運営者は保証しません。重要な判断については、税理士、行政機関、専門家等に確認してください。</p>
-    <p class="alert annual-note">本サービスの集計は入力データをもとにした簡易集計です。 確定申告や税務上の最終判断は、税理士・税務署等へご確認ください。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第8条（退会）</h3>
-    <p>利用者は、運営者所定の方法により退会を申し出ることができます。退会後のデータ削除については、プライバシーポリシーに従って対応します。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第9条（規約の変更）</h3>
-    <p>運営者は、必要に応じて本規約を変更できます。重要な変更がある場合は、本サービス上での掲示その他適切な方法により周知します。</p>
-  </section>
-
-  <section class="legal-section">
-    <h3>第10条（お問い合わせ）</h3>
-    <p>本規約に関するお問い合わせは、<a href="mailto:info@runfirm.net">info@runfirm.net</a> までご連絡ください。</p>
-  </section>
+  <p class="description">本規約は、AGLEEF-アグリーフ-（以下「本サービス」）をβ版として利用する際の基本的なルールを定めるものです。</p>
+  <section class="legal-section"><h3>1. サービス概要</h3><p>本サービスは、農作業日誌、作物・圃場、経費、売上、年間集計、CSV出力を記録・確認するための農業日誌WEBアプリです。</p></section>
+  <section class="legal-section"><h3>2. アカウント登録</h3><p>利用者は正確な情報で登録し、ユーザー名、メールアドレス、パスワードを自己の責任で管理してください。</p></section>
+  <section class="legal-section"><h3>3. 禁止事項</h3><p>不正アクセス、他者の権利侵害、虚偽情報の登録、過度な負荷をかける行為、法令や公序良俗に反する行為を禁止します。</p></section>
+  <section class="legal-section"><h3>4. データ入力内容の責任</h3><p>入力した日誌、売上、経費、画像などの内容と正確性は利用者自身の責任で管理してください。</p></section>
+  <section class="legal-section"><h3>5. 税務・確定申告に関する注意</h3><p class="notice-box-app">アグリーフの集計機能は、入力データをもとにした簡易集計です。確定申告や税務上の最終判断は、税理士・税務署等へ確認してください。</p></section>
+  <section class="legal-section"><h3>6. サービス停止・変更</h3><p>運営者は、保守、障害、機能改善、運用上の都合により、サービス内容を変更・停止・終了する場合があります。</p></section>
+  <section class="legal-section"><h3>7. 免責事項</h3><p>本サービスは記録と集計を補助するものであり、入力内容、集計結果、申告結果、利用により生じた損害について、法令上認められる範囲で責任を負いません。</p></section>
+  <section class="legal-section"><h3>8. 規約変更</h3><p>本規約は必要に応じて変更する場合があります。重要な変更はサービス内でお知らせします。</p></section>
+  <section class="legal-section"><h3>9. お問い合わせ</h3><p>本規約に関するお問い合わせは、お問い合わせページからご連絡ください。<?php if ($contactEmail !== ''): ?>連絡先メール：<a href="mailto:<?= e($contactEmail) ?>"><?= e($contactEmail) ?></a><?php endif; ?></p></section>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>

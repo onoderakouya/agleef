@@ -2,6 +2,9 @@
 require_once __DIR__ . '/includes/auth.php';
 require_login();
 
+$userId = current_user_id();
+$_SESSION['onboarding_' . $userId . '_export_viewed'] = true;
+
 function export_request_value(string $key, string $default = ''): string
 {
     $value = $_POST[$key] ?? $_GET[$key] ?? $default;

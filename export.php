@@ -2,6 +2,9 @@
 require_once __DIR__ . '/includes/auth.php';
 require_login();
 
+$userId = current_user_id();
+$_SESSION['onboarding_' . $userId . '_export_viewed'] = true;
+
 $currentYear = (int)date('Y');
 $yearRange = get_year_range();
 $exportTypes = get_export_types();

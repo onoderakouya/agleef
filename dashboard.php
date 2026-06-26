@@ -21,6 +21,31 @@ $yearSaleStmt = db()->prepare('SELECT COALESCE(SUM(gross_amount), 0) FROM sales 
 $yearSaleStmt->execute([':user_id' => $userId, ':start' => date('Y-01-01'), ':end' => date('Y-12-31')]);
 $yearSaleTotal = (int)$yearSaleStmt->fetchColumn();
 
+$onboardingTables = [
+    'crops' => 'crops',
+    'fields' => 'fields',
+    'diaries' => 'diaries',
+    'expenses' => 'expenses',
+    'sales' => 'sales',
+];
+$onboardingCounts = [];
+foreach ($onboardingTables as $key => $table) {
+    $countStmt = db()->prepare("SELECT COUNT(*) FROM {$table} WHERE user_id = :user_id");
+    $countStmt->execute([':user_id' => $userId]);
+    $onboardingCounts[$key] = (int)$countStmt->fetchColumn();
+}
+$hasViewedAnnualSummary = !empty($_SESSION['onboarding_' . $userId . '_annual_summary_viewed']);
+$hasViewedExport = !empty($_SESSION['onboarding_' . $userId . '_export_viewed']);
+$onboardingItems = [
+    ['label' => '作物を登録する', 'href' => 'crops.php', 'done' => $onboardingCounts['crops'] > 0],
+    ['label' => '圃場を登録する', 'href' => 'fields.php', 'done' => $onboardingCounts['fields'] > 0],
+    ['label' => '日誌を登録する', 'href' => 'diary_create.php', 'done' => $onboardingCounts['diaries'] > 0],
+    ['label' => '経費を登録する', 'href' => 'expense_create.php', 'done' => $onboardingCounts['expenses'] > 0],
+    ['label' => '売上を登録する', 'href' => 'sale_create.php', 'done' => $onboardingCounts['sales'] > 0],
+    ['label' => '年間集計を見る', 'href' => 'annual_summary.php', 'done' => $hasViewedAnnualSummary],
+    ['label' => 'CSV出力を試す', 'href' => 'export.php', 'done' => $hasViewedExport],
+];
+
 $pageTitle = 'ダッシュボード | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
@@ -28,6 +53,22 @@ include __DIR__ . '/includes/header.php';
   <h2>ダッシュボード</h2>
   <p class="description">日誌・作物・圃場・経費・売上を管理できます。ログイン中のユーザーのデータだけが表示されます。</p>
   <p><strong><?= e(current_user_name()) ?></strong> さん、ようこそ！</p>
+</section>
+
+
+<section class="card beginner-card">
+  <h3>はじめにやること</h3>
+  <p class="description">アグリーフを使い始めるために、まずは以下の順番で登録してみましょう。</p>
+  <div class="onboarding-checklist">
+    <?php foreach ($onboardingItems as $item): ?>
+      <a class="onboarding-item <?= e((string)($item['done'] ? 'is-complete' : '')) ?>" href="<?= e($item['href']) ?>">
+        <span class="onboarding-status" aria-hidden="true"><?= e((string)($item['done'] ? '✅' : '')) ?></span>
+        <span class="onboarding-label"><?= e($item['label']) ?></span>
+        <span class="status-badge <?= e((string)($item['done'] ? 'complete' : 'incomplete')) ?>"><?= e((string)($item['done'] ? '完了' : '未完了')) ?></span>
+      </a>
+    <?php endforeach; ?>
+  </div>
+  <p class="description">詳しい流れは <a href="guide.php">使い方ページ</a> でも確認できます。</p>
 </section>
 
 <section class="card">
