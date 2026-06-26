@@ -53,11 +53,15 @@ include __DIR__ . '/includes/header.php';
   <h2>ダッシュボード</h2>
   <p class="description">日誌・作物・圃場・経費・売上を管理できます。ログイン中のユーザーのデータだけが表示されます。</p>
   <p><strong><?= e(current_user_name()) ?></strong> さん、ようこそ！</p>
+  <button type="button" class="btn small onboarding-restore" data-onboarding-restore>「はじめにやること」を再表示</button>
 </section>
 
 
-<section class="card beginner-card">
-  <h3>はじめにやること</h3>
+<section class="card beginner-card" data-onboarding-card data-onboarding-key="agleef:onboarding:hidden:<?= e((string)$userId) ?>">
+  <div class="card-title-row">
+    <h3>はじめにやること</h3>
+    <button type="button" class="btn small" data-onboarding-hide>非表示にする</button>
+  </div>
   <p class="description">アグリーフを使い始めるために、まずは以下の順番で登録してみましょう。</p>
   <div class="onboarding-checklist">
     <?php foreach ($onboardingItems as $item): ?>
@@ -70,6 +74,40 @@ include __DIR__ . '/includes/header.php';
   </div>
   <p class="description">詳しい流れは <a href="guide.php">使い方ページ</a> でも確認できます。</p>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var onboardingCard = document.querySelector('[data-onboarding-card]');
+  var hideButton = document.querySelector('[data-onboarding-hide]');
+  var restoreButton = document.querySelector('[data-onboarding-restore]');
+
+  if (!onboardingCard || !hideButton || !restoreButton) {
+    return;
+  }
+
+  var storageKey = onboardingCard.getAttribute('data-onboarding-key');
+
+  function setOnboardingVisibility(isHidden) {
+    onboardingCard.hidden = isHidden;
+    restoreButton.classList.toggle('is-visible', isHidden);
+  }
+
+  try {
+    setOnboardingVisibility(window.localStorage.getItem(storageKey) === '1');
+
+    hideButton.addEventListener('click', function () {
+      window.localStorage.setItem(storageKey, '1');
+      setOnboardingVisibility(true);
+    });
+
+    restoreButton.addEventListener('click', function () {
+      window.localStorage.removeItem(storageKey);
+      setOnboardingVisibility(false);
+    });
+  } catch (error) {
+    setOnboardingVisibility(false);
+  }
+});
+</script>
 
 <section class="card">
   <h3>簡易サマリー</h3>
