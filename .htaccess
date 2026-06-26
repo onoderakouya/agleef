@@ -7,14 +7,18 @@
     RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
     RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[?::1\]?)($|:) [NC]
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=308,L]
+
+    # Hide development/setup artifacts from public URLs.
+    RewriteRule ^(?:README\.md|schema\.sql|seed\.sql)$ - [F,L,NC]
+    RewriteRule ^migrations(?:/|$) - [F,L,NC]
 </IfModule>
 
 <IfModule mod_headers.c>
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
 </IfModule>
 
-# Prevent the SQLite database file from being downloaded directly from the web root.
-<Files "database.sqlite">
+# Prevent the SQLite database file and other non-public artifacts from being downloaded directly from the web root.
+<FilesMatch "^(?:database\.sqlite|README\.md|schema\.sql|seed\.sql)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -22,4 +26,4 @@
         Order allow,deny
         Deny from all
     </IfModule>
-</Files>
+</FilesMatch>
