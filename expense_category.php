@@ -98,15 +98,15 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <section class="card narrow">
-  <h3><?= $editCategory ? 'カテゴリ編集' : 'カテゴリ追加' ?></h3>
+  <h3><?= e((string)($editCategory ? 'カテゴリ編集' : 'カテゴリ追加')) ?></h3>
   <form method="post" class="stack">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-    <input type="hidden" name="action" value="<?= $editCategory ? 'update' : 'create' ?>">
-    <?php if ($editCategory): ?><input type="hidden" name="id" value="<?= (int)$editCategory['id'] ?>"><?php endif; ?>
+    <input type="hidden" name="action" value="<?= e((string)($editCategory ? 'update' : 'create')) ?>">
+    <?php if ($editCategory): ?><input type="hidden" name="id" value="<?= e((string)((int)$editCategory['id'])) ?>"><?php endif; ?>
     <label>カテゴリ名<input type="text" name="name" value="<?= e($editCategory['name'] ?? '') ?>" required></label>
     <label>表示順<input type="number" name="sort_order" value="<?= e((string)($editCategory['sort_order'] ?? '0')) ?>" step="1"></label>
     <div class="button-row">
-      <button class="primary" type="submit"><?= $editCategory ? '更新する' : '追加する' ?></button>
+      <button class="primary" type="submit"><?= e((string)($editCategory ? '更新する' : '追加する')) ?></button>
       <?php if ($editCategory): ?><a class="btn" href="expense_category.php">追加フォームに戻る</a><?php endif; ?>
       <a class="btn" href="expense_list.php">経費一覧へ</a>
     </div>
@@ -120,15 +120,15 @@ include __DIR__ . '/includes/header.php';
       <li>
         <div>
           <strong><?= e($category['name']) ?></strong>
-          <span class="description">表示順: <?= (int)$category['sort_order'] ?> / 使用件数: <?= (int)$category['expense_count'] ?>件</span>
+          <span class="description">表示順: <?= e((string)((int)$category['sort_order'])) ?> / 使用件数: <?= e((string)((int)$category['expense_count'])) ?>件</span>
         </div>
         <div class="inline-actions">
-          <a class="btn small" href="expense_category.php?edit_id=<?= (int)$category['id'] ?>">編集</a>
+          <a class="btn small" href="expense_category.php?edit_id=<?= e((string)((int)$category['id'])) ?>">編集</a>
           <form method="post" onsubmit="return confirm('このカテゴリを削除しますか？');">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="id" value="<?= (int)$category['id'] ?>">
-            <button class="btn small danger" type="submit" <?= (int)$category['expense_count'] > 0 ? 'disabled' : '' ?>>削除</button>
+            <input type="hidden" name="id" value="<?= e((string)((int)$category['id'])) ?>">
+            <button class="btn small danger" type="submit" <?= e((string)((int)$category['expense_count'] > 0 ? 'disabled' : '')) ?>>削除</button>
           </form>
         </div>
       </li>

@@ -139,17 +139,17 @@ include __DIR__ . '/includes/header.php';
   <h2>日誌編集</h2>
   <form method="post" class="stack" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-    <input type="hidden" name="id" value="<?= (int)$diary['id'] ?>">
+    <input type="hidden" name="id" value="<?= e((string)((int)$diary['id'])) ?>">
 
     <label>作業日
       <input type="date" name="work_date" value="<?= e($diary['work_date']) ?>" required>
     </label>
 
     <label>作物 <span aria-hidden="true">*</span>
-      <select name="crop_id" required <?= !$hasCrops ? 'disabled' : '' ?>>
+      <select name="crop_id" required <?= e((string)(!$hasCrops ? 'disabled' : '')) ?>>
         <option value="">選択してください</option>
         <?php foreach ($crops as $crop): ?>
-          <option value="<?= (int)$crop['id'] ?>" <?= (int)($diary['crop_id'] ?? 0) === (int)$crop['id'] ? 'selected' : '' ?>>
+          <option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)((int)($diary['crop_id'] ?? 0) === (int)$crop['id'] ? 'selected' : '')) ?>>
             <?= e($crop['name']) ?>
           </option>
         <?php endforeach; ?>
@@ -160,10 +160,10 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 
     <label>圃場 <span aria-hidden="true">*</span>
-      <select name="field_id" required <?= !$hasFields ? 'disabled' : '' ?>>
+      <select name="field_id" required <?= e((string)(!$hasFields ? 'disabled' : '')) ?>>
         <option value="">選択してください</option>
         <?php foreach ($fields as $field): ?>
-          <option value="<?= (int)$field['id'] ?>" <?= (int)($diary['field_id'] ?? 0) === (int)$field['id'] ? 'selected' : '' ?>>
+          <option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)((int)($diary['field_id'] ?? 0) === (int)$field['id'] ? 'selected' : '')) ?>>
             <?= e($field['name']) ?>
           </option>
         <?php endforeach; ?>
@@ -202,7 +202,7 @@ include __DIR__ . '/includes/header.php';
     </div>
 
     <div class="button-row">
-      <button class="primary" type="submit" <?= !$hasCrops || !$hasFields ? 'disabled' : '' ?>>更新</button>
+      <button class="primary" type="submit" <?= e((string)(!$hasCrops || !$hasFields ? 'disabled' : '')) ?>>更新</button>
       <a class="btn" href="diary_list.php">戻る</a>
     </div>
   </form>

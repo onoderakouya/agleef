@@ -143,7 +143,7 @@ include __DIR__ . '/includes/header.php';
         <select name="crop_id">
           <option value="">すべての作物</option>
           <?php foreach ($crops as $crop): ?>
-            <option value="<?= (int)$crop['id'] ?>" <?= $selectedCropId === (int)$crop['id'] ? 'selected' : '' ?>>
+            <option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)($selectedCropId === (int)$crop['id'] ? 'selected' : '')) ?>>
               <?= e($crop['name']) ?>
             </option>
           <?php endforeach; ?>
@@ -155,7 +155,7 @@ include __DIR__ . '/includes/header.php';
         <select name="field_id">
           <option value="">すべての圃場</option>
           <?php foreach ($fields as $field): ?>
-            <option value="<?= (int)$field['id'] ?>" <?= $selectedFieldId === (int)$field['id'] ? 'selected' : '' ?>>
+            <option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)($selectedFieldId === (int)$field['id'] ? 'selected' : '')) ?>>
               <?= e($field['name']) ?>
             </option>
           <?php endforeach; ?>
@@ -208,13 +208,13 @@ include __DIR__ . '/includes/header.php';
         <?php if (!$diaries): ?>
           <tr>
             <td colspan="10">
-              <?= $hasSearchCondition ? '条件に一致する日誌はありません。' : '日誌がまだありません。' ?>
+              <?= e((string)($hasSearchCondition ? '条件に一致する日誌はありません。' : '日誌がまだありません。')) ?>
             </td>
           </tr>
         <?php else: ?>
           <?php foreach ($diaries as $row): ?>
             <tr>
-              <td data-label="ID"><?= (int)$row['id'] ?></td>
+              <td data-label="ID"><?= e((string)((int)$row['id'])) ?></td>
               <td data-label="作業日"><?= e($row['work_date']) ?></td>
               <td data-label="写真">
                 <?php if (!empty($row['photo_path'])): ?>
@@ -231,12 +231,12 @@ include __DIR__ . '/includes/header.php';
               <td data-label="更新日時"><?= e($row['updated_at'] ?? $row['created_at']) ?></td>
               <td data-label="操作" class="actions-cell">
                 <div class="inline-actions">
-                  <a class="btn small" href="diary_detail.php?id=<?= (int)$row['id'] ?>">詳細</a>
-                  <a class="btn small" href="diary_edit.php?id=<?= (int)$row['id'] ?>">編集</a>
+                  <a class="btn small" href="diary_detail.php?id=<?= e((string)((int)$row['id'])) ?>">詳細</a>
+                  <a class="btn small" href="diary_edit.php?id=<?= e((string)((int)$row['id'])) ?>">編集</a>
                   <form method="post" onsubmit="return confirm('この日誌を削除しますか？');">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                     <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                    <input type="hidden" name="id" value="<?= e((string)((int)$row['id'])) ?>">
                     <button class="btn small danger" type="submit">削除</button>
                   </form>
                 </div>

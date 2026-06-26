@@ -56,15 +56,15 @@ include __DIR__ . '/includes/header.php';
   <h2>作物マスタ管理</h2>
   <form method="post" class="stack">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-    <input type="hidden" name="action" value="<?= $editingCrop ? 'update' : 'create' ?>">
+    <input type="hidden" name="action" value="<?= e((string)($editingCrop ? 'update' : 'create')) ?>">
     <?php if ($editingCrop): ?>
-      <input type="hidden" name="id" value="<?= (int)$editingCrop['id'] ?>">
+      <input type="hidden" name="id" value="<?= e((string)((int)$editingCrop['id'])) ?>">
     <?php endif; ?>
     <label>作物名
       <input type="text" name="name" value="<?= e($editingCrop['name'] ?? '') ?>" placeholder="例: トマト" required>
     </label>
     <div class="button-row">
-      <button class="primary" type="submit"><?= $editingCrop ? '更新する' : '登録する' ?></button>
+      <button class="primary" type="submit"><?= e((string)($editingCrop ? '更新する' : '登録する')) ?></button>
       <?php if ($editingCrop): ?><a class="btn" href="crops.php">キャンセル</a><?php endif; ?>
     </div>
   </form>
@@ -77,11 +77,11 @@ include __DIR__ . '/includes/header.php';
       <li>
         <span><?= e($crop['name']) ?></span>
         <div class="inline-actions">
-          <a class="btn small" href="crops.php?edit=<?= (int)$crop['id'] ?>">編集</a>
+          <a class="btn small" href="crops.php?edit=<?= e((string)((int)$crop['id'])) ?>">編集</a>
           <form method="post" onsubmit="return confirm('削除してよいですか？');">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="id" value="<?= (int)$crop['id'] ?>">
+            <input type="hidden" name="id" value="<?= e((string)((int)$crop['id'])) ?>">
             <button type="submit" class="btn danger small">削除</button>
           </form>
         </div>

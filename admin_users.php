@@ -94,9 +94,9 @@ include __DIR__ . '/includes/header.php';
       <label>
         権限
         <select name="role">
-          <option value="all" <?= $role === 'all' ? 'selected' : '' ?>>すべて</option>
-          <option value="admin" <?= $role === 'admin' ? 'selected' : '' ?>>管理者</option>
-          <option value="user" <?= $role === 'user' ? 'selected' : '' ?>>一般ユーザー</option>
+          <option value="all" <?= e((string)($role === 'all' ? 'selected' : '')) ?>>すべて</option>
+          <option value="admin" <?= e((string)($role === 'admin' ? 'selected' : '')) ?>>管理者</option>
+          <option value="user" <?= e((string)($role === 'user' ? 'selected' : '')) ?>>一般ユーザー</option>
         </select>
       </label>
     </div>
@@ -137,7 +137,7 @@ include __DIR__ . '/includes/header.php';
             <td data-label="ID"><?= e((string)$user['id']) ?></td>
             <td data-label="ユーザー名"><?= e($user['username']) ?></td>
             <td data-label="メールアドレス"><?= e($user['email'] ?? '-') ?></td>
-            <td data-label="権限"><span class="badge <?= ((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user' ?>"><?= ((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー' ?></span></td>
+            <td data-label="権限"><span class="badge <?= e((string)(((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user')) ?>"><?= e((string)(((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー')) ?></span></td>
             <td data-label="登録日時"><?= e($user['created_at']) ?></td>
             <td data-label="更新日時"><?= e($user['updated_at'] ?? '-') ?></td>
             <td data-label="日誌件数"><?= e((string)$user['diary_count']) ?></td>
@@ -145,7 +145,7 @@ include __DIR__ . '/includes/header.php';
             <td data-label="圃場件数"><?= e((string)$user['field_count']) ?></td>
             <td data-label="経費件数"><?= e((string)$user['expense_count']) ?></td>
             <td data-label="売上件数"><?= e((string)$user['sale_count']) ?></td>
-            <td data-label="詳細"><a class="btn small" href="admin_user_detail.php?user_id=<?= (int)$user['id'] ?>">概要</a></td>
+            <td data-label="詳細"><a class="btn small" href="admin_user_detail.php?user_id=<?= e((string)((int)$user['id'])) ?>">概要</a></td>
           </tr>
         <?php endforeach; ?>
       </tbody>

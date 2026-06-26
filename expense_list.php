@@ -148,7 +148,7 @@ include __DIR__ . '/includes/header.php';
         <select name="category_id">
           <option value="">すべて</option>
           <?php foreach ($categories as $category): ?>
-            <option value="<?= (int)$category['id'] ?>" <?= $categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '' ?>><?= e($category['name']) ?></option>
+            <option value="<?= e((string)((int)$category['id'])) ?>" <?= e((string)($categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '')) ?>><?= e($category['name']) ?></option>
           <?php endforeach; ?>
         </select>
       </label>
@@ -156,7 +156,7 @@ include __DIR__ . '/includes/header.php';
         <select name="crop_id">
           <option value="">すべて</option>
           <?php foreach ($crops as $crop): ?>
-            <option value="<?= (int)$crop['id'] ?>" <?= $cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '' ?>><?= e($crop['name']) ?></option>
+            <option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)($cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '')) ?>><?= e($crop['name']) ?></option>
           <?php endforeach; ?>
         </select>
       </label>
@@ -164,7 +164,7 @@ include __DIR__ . '/includes/header.php';
         <select name="field_id">
           <option value="">すべて</option>
           <?php foreach ($fields as $field): ?>
-            <option value="<?= (int)$field['id'] ?>" <?= $fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '' ?>><?= e($field['name']) ?></option>
+            <option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)($fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '')) ?>><?= e($field['name']) ?></option>
           <?php endforeach; ?>
         </select>
       </label>
@@ -223,7 +223,7 @@ include __DIR__ . '/includes/header.php';
       </thead>
       <tbody>
         <?php if (!$expenses): ?>
-          <tr><td colspan="10"><?= $hasSearchCondition ? '条件に一致する経費はありません。' : '経費がまだありません。' ?></td></tr>
+          <tr><td colspan="10"><?= e((string)($hasSearchCondition ? '条件に一致する経費はありません。' : '経費がまだありません。')) ?></td></tr>
         <?php else: ?>
           <?php foreach ($expenses as $row): ?>
             <tr>
@@ -235,14 +235,14 @@ include __DIR__ . '/includes/header.php';
               <td data-label="内容"><span class="cell-note"><?= e($row['description']) ?></span></td>
               <td data-label="金額"><strong><?= e(format_yen((int)$row['amount'])) ?></strong></td>
               <td data-label="支払方法"><?= e($row['payment_method'] ?? '-') ?></td>
-              <td data-label="領収書"><?= !empty($row['receipt_path']) ? 'あり' : 'なし' ?></td>
+              <td data-label="領収書"><?= e((string)(!empty($row['receipt_path']) ? 'あり' : 'なし')) ?></td>
               <td data-label="操作" class="actions-cell">
                 <div class="inline-actions">
-                  <a class="btn small" href="expense_detail.php?id=<?= (int)$row['id'] ?>">詳細</a>
-                  <a class="btn small" href="expense_edit.php?id=<?= (int)$row['id'] ?>">編集</a>
+                  <a class="btn small" href="expense_detail.php?id=<?= e((string)((int)$row['id'])) ?>">詳細</a>
+                  <a class="btn small" href="expense_edit.php?id=<?= e((string)((int)$row['id'])) ?>">編集</a>
                   <form method="post" action="expense_delete.php" onsubmit="return confirm('この経費を削除しますか？');">
                     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                    <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                    <input type="hidden" name="id" value="<?= e((string)((int)$row['id'])) ?>">
                     <button class="btn small danger" type="submit">削除</button>
                   </form>
                 </div>

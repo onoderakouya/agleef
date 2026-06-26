@@ -50,7 +50,7 @@ include __DIR__ . '/includes/header.php';
 
 <section class="card">
   <div class="button-row">
-    <a class="btn primary" href="expense_edit.php?id=<?= (int)$expense['id'] ?>">編集する</a>
+    <a class="btn primary" href="expense_edit.php?id=<?= e((string)((int)$expense['id'])) ?>">編集する</a>
     <a class="btn" href="expense_list.php">一覧へ戻る</a>
   </div>
 </section>

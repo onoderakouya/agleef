@@ -27,9 +27,9 @@ include __DIR__ . '/includes/header.php';
     <dt>圃場</dt><dd><?= e($sale['field_name'] ?? '-') ?></dd>
     <dt>販売先</dt><dd><?= e($sale['buyer'] ?? '-') ?></dd>
     <dt>品目</dt><dd><?= e($sale['product_name']) ?></dd>
-    <dt>数量</dt><dd><?= $sale['quantity'] !== null && $sale['quantity'] !== '' ? e(format_quantity((float)$sale['quantity'])) : '-' ?></dd>
+    <dt>数量</dt><dd><?= e((string)($sale['quantity'] !== null && $sale['quantity'] !== '' ? format_quantity((float)$sale['quantity']) : '-')) ?></dd>
     <dt>単位</dt><dd><?= e($sale['unit'] ?? '-') ?></dd>
-    <dt>単価</dt><dd><?= $sale['unit_price'] !== null ? e(format_yen((int)$sale['unit_price'])) : '-' ?></dd>
+    <dt>単価</dt><dd><?= e((string)($sale['unit_price'] !== null ? format_yen((int)$sale['unit_price']) : '-')) ?></dd>
     <dt>売上総額</dt><dd><strong><?= e(format_yen((int)$sale['gross_amount'])) ?></strong></dd>
     <dt>手数料</dt><dd><?= e(format_yen((int)$sale['fee_amount'])) ?></dd>
     <dt>送料</dt><dd><?= e(format_yen((int)$sale['shipping_amount'])) ?></dd>
@@ -49,5 +49,5 @@ include __DIR__ . '/includes/header.php';
     <p class="description">明細写真なし</p>
   <?php endif; ?>
 </section>
-<section class="card"><div class="button-row"><a class="btn primary" href="sale_edit.php?id=<?= (int)$sale['id'] ?>">編集する</a><a class="btn" href="sale_list.php">一覧へ戻る</a></div></section>
+<section class="card"><div class="button-row"><a class="btn primary" href="sale_edit.php?id=<?= e((string)((int)$sale['id'])) ?>">編集する</a><a class="btn" href="sale_list.php">一覧へ戻る</a></div></section>
 <?php include __DIR__ . '/includes/footer.php'; ?>

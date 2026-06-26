@@ -115,7 +115,7 @@ include __DIR__ . '/includes/header.php';
     <dt>ユーザーID</dt><dd><?= e((string)$user['id']) ?></dd>
     <dt>ユーザー名</dt><dd><?= e($user['username']) ?></dd>
     <dt>メールアドレス</dt><dd><?= e($user['email'] ?? '-') ?></dd>
-    <dt>権限</dt><dd><span class="badge <?= ((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user' ?>"><?= ((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー' ?></span></dd>
+    <dt>権限</dt><dd><span class="badge <?= e((string)(((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user')) ?>"><?= e((string)(((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー')) ?></span></dd>
     <dt>登録日時</dt><dd><?= e($user['created_at']) ?></dd>
     <dt>更新日時</dt><dd><?= e($user['updated_at'] ?? '-') ?></dd>
   </dl>

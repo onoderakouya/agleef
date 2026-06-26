@@ -91,7 +91,7 @@ include __DIR__ . '/includes/header.php';
     <label>お問い合わせ種別 <span aria-hidden="true">*</span>
       <select name="category" required>
         <?php foreach ($categories as $option): ?>
-          <option value="<?= e($option) ?>" <?= $category === $option ? 'selected' : '' ?>><?= e($option) ?></option>
+          <option value="<?= e($option) ?>" <?= e((string)($category === $option ? 'selected' : '')) ?>><?= e($option) ?></option>
         <?php endforeach; ?>
       </select>
     </label>

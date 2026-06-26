@@ -237,7 +237,7 @@ include __DIR__ . '/includes/header.php';
       <label for="year">対象年</label>
       <select id="year" name="year">
         <?php foreach ($yearRange as $year): ?>
-          <option value="<?= (int)$year ?>" <?= $year === $selectedYear ? 'selected' : '' ?>><?= (int)$year ?></option>
+          <option value="<?= e((string)((int)$year)) ?>" <?= e((string)($year === $selectedYear ? 'selected' : '')) ?>><?= e((string)((int)$year)) ?></option>
         <?php endforeach; ?>
       </select>
       <button class="btn primary" type="submit">表示</button>
@@ -245,9 +245,9 @@ include __DIR__ . '/includes/header.php';
   </div>
   <p class="alert annual-note">この集計は入力データをもとにした簡易集計です。確定申告用の正式な所得計算は、税理士・税務署等へ確認してください。</p>
   <div class="button-row annual-export-actions">
-    <a class="btn primary" href="export_csv.php?type=annual_summary&amp;year=<?= (int)$selectedYear ?>&amp;encoding=utf8_bom">この年の年間集計CSVを出力する</a>
-    <a class="btn" href="export_csv.php?type=sales&amp;year=<?= (int)$selectedYear ?>&amp;encoding=utf8_bom">この年の売上CSVを出力する</a>
-    <a class="btn" href="export_csv.php?type=expenses&amp;year=<?= (int)$selectedYear ?>&amp;encoding=utf8_bom">この年の経費CSVを出力する</a>
+    <a class="btn primary" href="export_csv.php?type=annual_summary&amp;year=<?= e((string)((int)$selectedYear)) ?>&amp;encoding=utf8_bom">この年の年間集計CSVを出力する</a>
+    <a class="btn" href="export_csv.php?type=sales&amp;year=<?= e((string)((int)$selectedYear)) ?>&amp;encoding=utf8_bom">この年の売上CSVを出力する</a>
+    <a class="btn" href="export_csv.php?type=expenses&amp;year=<?= e((string)((int)$selectedYear)) ?>&amp;encoding=utf8_bom">この年の経費CSVを出力する</a>
   </div>
 </section>
 
@@ -275,16 +275,16 @@ include __DIR__ . '/includes/header.php';
             $monthExpense = (int)$row['expense_total'];
           ?>
           <tr>
-            <td data-label="月"><?= (int)$row['month'] ?>月</td>
+            <td data-label="月"><?= e((string)((int)$row['month'])) ?>月</td>
             <td data-label="売上総額"><?= e(format_yen($monthGross)) ?></td>
             <td data-label="差引入金額"><?= e(format_yen($monthNet)) ?></td>
             <td data-label="経費合計"><?= e(format_yen($monthExpense)) ?></td>
             <td data-label="売上総額ベース差引" class="<?= e($yenClass($monthGross - $monthExpense)) ?>"><?= e(format_yen($monthGross - $monthExpense)) ?></td>
             <td data-label="入金額ベース差引" class="<?= e($yenClass($monthNet - $monthExpense)) ?>"><?= e(format_yen($monthNet - $monthExpense)) ?></td>
             <td data-label="簡易バー">
-              <div class="mini-bars" aria-label="<?= (int)$row['month'] ?>月の簡易バー">
-                <span class="mini-bar sales" style="width: <?= max(2, (int)round($monthGross / $monthlyMax * 100)) ?>%"></span>
-                <span class="mini-bar expense" style="width: <?= max(2, (int)round($monthExpense / $monthlyMax * 100)) ?>%"></span>
+              <div class="mini-bars" aria-label="<?= e((string)((int)$row['month'])) ?>月の簡易バー">
+                <span class="mini-bar sales" style="width: <?= e((string)(max(2, (int)round($monthGross / $monthlyMax * 100)))) ?>%"></span>
+                <span class="mini-bar expense" style="width: <?= e((string)(max(2, (int)round($monthExpense / $monthlyMax * 100)))) ?>%"></span>
               </div>
             </td>
           </tr>
@@ -331,7 +331,7 @@ include __DIR__ . '/includes/header.php';
   <h3>未入金の売上一覧</h3>
   <div class="table-wrap annual-table-wrap"><table class="annual-table"><thead><tr><th>売上日</th><th>販売先</th><th>品目</th><th>売上総額</th><th>差引入金額</th><th>入金状況</th><th>入金日</th><th>詳細</th></tr></thead><tbody>
     <?php if (!$unpaidSales): ?><tr><td colspan="8">未入金の売上はありません。</td></tr><?php endif; ?>
-    <?php foreach ($unpaidSales as $row): ?><tr><td data-label="売上日"><?= e($row['sale_date']) ?></td><td data-label="販売先"><?= e($row['buyer'] ?? '-') ?></td><td data-label="品目"><?= e($row['product_name']) ?></td><td data-label="売上総額"><?= e(format_yen((int)$row['gross_amount'])) ?></td><td data-label="差引入金額"><?= e(format_yen((int)$row['net_amount'])) ?></td><td data-label="入金状況"><?= e($row['payment_status'] ?? '未入金') ?></td><td data-label="入金日"><?= e($row['payment_date'] ?? '-') ?></td><td data-label="詳細"><a class="btn small" href="sale_detail.php?id=<?= (int)$row['id'] ?>">詳細</a></td></tr><?php endforeach; ?>
+    <?php foreach ($unpaidSales as $row): ?><tr><td data-label="売上日"><?= e($row['sale_date']) ?></td><td data-label="販売先"><?= e($row['buyer'] ?? '-') ?></td><td data-label="品目"><?= e($row['product_name']) ?></td><td data-label="売上総額"><?= e(format_yen((int)$row['gross_amount'])) ?></td><td data-label="差引入金額"><?= e(format_yen((int)$row['net_amount'])) ?></td><td data-label="入金状況"><?= e($row['payment_status'] ?? '未入金') ?></td><td data-label="入金日"><?= e($row['payment_date'] ?? '-') ?></td><td data-label="詳細"><a class="btn small" href="sale_detail.php?id=<?= e((string)((int)$row['id'])) ?>">詳細</a></td></tr><?php endforeach; ?>
   </tbody></table></div>
 </section>
 
@@ -339,7 +339,7 @@ include __DIR__ . '/includes/header.php';
   <h3>領収書写真なしの経費一覧</h3>
   <div class="table-wrap annual-table-wrap"><table class="annual-table"><thead><tr><th>支払日</th><th>カテゴリ</th><th>支払先</th><th>内容</th><th>金額</th><th>詳細</th></tr></thead><tbody>
     <?php if (!$missingReceiptExpenses): ?><tr><td colspan="6">領収書写真なしの経費はありません。</td></tr><?php endif; ?>
-    <?php foreach ($missingReceiptExpenses as $row): ?><tr><td data-label="支払日"><?= e($row['expense_date']) ?></td><td data-label="カテゴリ"><?= e($row['category_name']) ?></td><td data-label="支払先"><?= e($row['payee'] ?? '-') ?></td><td data-label="内容"><?= e($row['description']) ?></td><td data-label="金額"><strong><?= e(format_yen((int)$row['amount'])) ?></strong></td><td data-label="詳細"><a class="btn small" href="expense_detail.php?id=<?= (int)$row['id'] ?>">詳細</a></td></tr><?php endforeach; ?>
+    <?php foreach ($missingReceiptExpenses as $row): ?><tr><td data-label="支払日"><?= e($row['expense_date']) ?></td><td data-label="カテゴリ"><?= e($row['category_name']) ?></td><td data-label="支払先"><?= e($row['payee'] ?? '-') ?></td><td data-label="内容"><?= e($row['description']) ?></td><td data-label="金額"><strong><?= e(format_yen((int)$row['amount'])) ?></strong></td><td data-label="詳細"><a class="btn small" href="expense_detail.php?id=<?= e((string)((int)$row['id'])) ?>">詳細</a></td></tr><?php endforeach; ?>
   </tbody></table></div>
 </section>
 
