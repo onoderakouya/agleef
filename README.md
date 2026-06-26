@@ -11,6 +11,7 @@
   - `htmlspecialchars` による XSS対策
   - CSRFトークン検証
   - ログインユーザーの `user_id` によるデータ分離
+  - `.htaccess` による `database.sqlite` の直接ダウンロード拒否（Apache 配置時）
 
 ## 2. ディレクトリ構成
 

@@ -1,0 +1,10 @@
+# Prevent the SQLite database file from being downloaded directly from the web root.
+<Files "database.sqlite">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
