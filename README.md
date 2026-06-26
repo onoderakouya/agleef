@@ -166,6 +166,87 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 
 `photo_path` がすでに表示されている場合、`migrations/add_photo_path_to_diaries.sql` は実行しないでください。
 
+
+## 7. バックアップ設計・復元手順
+
+本番環境では `database.sqlite` と `assets/uploads/` を定期バックアップし、バックアップファイルは公開ディレクトリ外に保存します。
+
+### 保存形式
+
+標準のバックアップ先はプロジェクトルートの1階層上にある `agleef-backups/` です。Web公開ディレクトリがこのリポジトリの場合、公開ディレクトリ外になります。サーバー構成に合わせて `BACKUP_DIR` で明示指定してください。
+
+```text
+../agleef-backups/
+  database_YYYYMMDD.sqlite
+  uploads_YYYYMMDD.zip
+```
+
+### 手動バックアップ
+
+DBとアップロードファイルをまとめてバックアップします。
+
+```bash
+./scripts/backup.sh
+```
+
+保存先を明示する場合は、必ずWebから直接アクセスできない場所を指定します。
+
+```bash
+BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh
+```
+
+本番反映前は、最低限DBバックアップを必ず作成してからデプロイ・migrationを実行します。
+
+```bash
+./scripts/pre_deploy_backup.sh
+```
+
+### 定期バックアップ設定例
+
+cronで毎日3:10にDBとアップロードファイルをバックアップする例です。`BACKUP_DIR` は公開ディレクトリ外の絶対パスに置き換えてください。
+
+```cron
+10 3 * * * cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh >> /home/your-user/agleef-backups/backup.log 2>&1
+```
+
+アップロードファイルが大きい場合は、DBは毎日、アップロードファイルは週1回などに分けて実行できます。
+
+```cron
+10 3 * * * cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh --db-only >> /home/your-user/agleef-backups/backup.log 2>&1
+30 3 * * 0 cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh --uploads-only >> /home/your-user/agleef-backups/backup.log 2>&1
+```
+
+### 復元手順
+
+復元作業前に、現在の状態を退避します。
+
+```bash
+cp database.sqlite database.sqlite.before-restore
+if [ -d assets/uploads ]; then mv assets/uploads assets/uploads.before-restore; fi
+```
+
+DBを復元します。
+
+```bash
+cp /home/your-user/agleef-backups/database_YYYYMMDD.sqlite database.sqlite
+```
+
+アップロードファイルを復元します。
+
+```bash
+unzip /home/your-user/agleef-backups/uploads_YYYYMMDD.zip -d .
+```
+
+復元後、Webサーバー実行ユーザーがDBとアップロードディレクトリを読み書きできるよう権限を確認します。
+
+```bash
+chmod 664 database.sqlite
+chmod -R u+rwX,g+rwX assets/uploads
+sqlite3 database.sqlite "PRAGMA integrity_check;"
+```
+
+`PRAGMA integrity_check;` が `ok` を返したら、ログイン、日誌・経費・売上の一覧表示、写真表示を確認してください。
+
 ## 7. MVP機能
 - 新規ユーザー登録（`ALLOW_REGISTRATION` による受付停止、CSRFトークン検証、パスワードハッシュ化）
 - ログイン / ログアウト
@@ -253,7 +334,7 @@ define('ALLOW_REGISTRATION', false);
 
 ## 9. 補足
 - `includes/db.php` は起動時に不足テーブルや古い `diaries` 構造を補正しますが、本番データでは事前バックアップ後に migration SQL を明示実行する運用を推奨します。
-- 本番運用ではHTTPS化、Cookie設定強化、バックアップ設計を追加してください。
+- 本番運用ではHTTPS化、Cookie設定強化に加え、「バックアップ設計・復元手順」に沿って定期バックアップを運用してください。
 
 ## 10. 経費記録機能（第1段階MVP）
 
