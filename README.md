@@ -744,3 +744,27 @@ sqlite3 database.sqlite "SELECT id, username, is_admin FROM users WHERE is_admin
 - `no such column: is_admin`: 本番DBにmigrationが未実行です。バックアップ後、`migrations/add_is_admin_to_users.sql` を1回だけ実行してください。
 - 管理者ページでユーザーが見つからない: `admin_user_detail.php?user_id=...` のIDが存在しません。ユーザー一覧から詳細を開き直してください。
 - DB書き込みエラー: Webサーバー実行ユーザーが `database.sqlite` と配置ディレクトリに読み書きできるか確認してください。
+
+## 公開リリース前のユーザー向け導線
+
+未登録ユーザー・初心者ユーザーが迷わず使い始められるよう、ルート直下に以下の公開ページを配置しています。これらのページは未ログインでも閲覧でき、`require_login()` は呼び出しません。
+
+- `guide.php`: 登録後の使い方、作物・圃場・日誌・経費・売上・年間集計・CSV出力への導線
+- `faq.php`: β版利用、確定申告、写真添付、CSV出力、データ削除相談などのFAQ
+- `contact.php`: `CONTACT_EMAIL` を使った mailto 形式のお問い合わせ導線
+- `privacy.php`: β版MVP向けのプライバシーポリシー
+- `terms.php`: β版MVP向けの利用規約
+
+`includes/config.php` の `CONTACT_EMAIL` を本番運用の連絡先メールアドレスに変更してください。メールアドレスを表示・mailtoリンクに出力する箇所では `e()` でエスケープしています。
+
+ログイン後の `dashboard.php` には「はじめにやること」チェックリストを追加しています。作物、圃場、日誌、経費、売上はログインユーザーの登録件数が1件以上ある場合に「完了」と表示します。
+
+### 法務・税務文面について
+
+プライバシーポリシー、利用規約、確定申告に関する注意書きはβ版MVP向けの簡易文面です。正式公開前には、個人情報保護、利用規約、税務・会計上の表示について、必要に応じて専門家へ確認してください。
+
+### 動作確認手順
+
+ローカル環境では PHP ビルトインサーバーなどで起動し、未ログイン状態で `guide.php`、`faq.php`、`contact.php`、`privacy.php`、`terms.php` が表示できることを確認します。ログイン後は `dashboard.php` のチェックリスト、ヘッダーの使い方・FAQ・お問い合わせリンク、フッターの規約系リンクを確認してください。
+
+本番サーバーでは `https://honocca.com/agleef/guide.php` などの公開URLを直接開き、未ログインで閲覧できること、LP・ログイン・新規登録画面から各ページへ移動できること、スマホ幅で表示が崩れないことを確認してください。

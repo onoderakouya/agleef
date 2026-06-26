@@ -144,6 +144,7 @@ include __DIR__ . '/includes/header.php';
         パスワード確認
         <input type="password" name="password_confirmation" autocomplete="new-password" minlength="8" required>
       </label>
+      <p class="form-help consent-note">登録することで、<a href="terms.php">利用規約</a>と<a href="privacy.php">プライバシーポリシー</a>に同意したものとみなします。</p>
       <div class="button-row auth-actions">
         <button type="submit" class="primary">登録する</button>
         <a class="btn" href="login.php">ログイン画面へ戻る</a>
