@@ -10,6 +10,10 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL DEFAULT '',
   password_hash TEXT NOT NULL,
   is_admin INTEGER NOT NULL DEFAULT 0,
+  last_login_at TEXT,
+  is_suspended INTEGER NOT NULL DEFAULT 0,
+  suspended_at TEXT,
+  suspended_reason TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CHECK (length(trim(username)) BETWEEN 3 AND 50),
@@ -23,6 +27,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- 役割: 「何を育てたか」を候補から選べるようにする
 -- =========================================================
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_users_is_suspended ON users(is_suspended);
+CREATE INDEX IF NOT EXISTS idx_users_last_login_at ON users(last_login_at);
 
 CREATE TABLE IF NOT EXISTS crops (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,6 +177,51 @@ CREATE TABLE IF NOT EXISTS contact_requests (
   CHECK (length(trim(message)) BETWEEN 1 AND 3000)
 );
 
+
+
+-- =========================================================
+-- app_settings: アプリ全体設定
+-- =========================================================
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO app_settings (key, value, updated_at)
+VALUES ('registration_enabled', '1', CURRENT_TIMESTAMP);
+
+-- =========================================================
+-- contacts: お問い合わせ管理
+-- =========================================================
+CREATE TABLE IF NOT EXISTS contacts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  name TEXT,
+  email TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT '未対応',
+  admin_memo TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- =========================================================
+-- admin_logs: 管理者操作ログ
+-- =========================================================
+CREATE TABLE IF NOT EXISTS admin_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  admin_user_id INTEGER NOT NULL,
+  action TEXT NOT NULL,
+  target_type TEXT,
+  target_id INTEGER,
+  detail TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- =========================================================
 -- インデックス設計
 -- =========================================================
@@ -198,3 +249,8 @@ CREATE INDEX IF NOT EXISTS idx_sales_payment_status ON sales(user_id, payment_st
 
 CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_contact_requests_user_id ON contact_requests(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_contacts_status_created ON contacts(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contacts_user_id ON contacts(user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_logs_created_at ON admin_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_logs_admin_user_id ON admin_logs(admin_user_id);

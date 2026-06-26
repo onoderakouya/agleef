@@ -1,58 +1,12 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 require_admin();
-
-$stmt = db()->prepare(
-    'SELECT cr.id, cr.name, cr.email, cr.category, cr.message, cr.created_at, u.username
-     FROM contact_requests cr
-     LEFT JOIN users u ON u.id = cr.user_id
-     ORDER BY datetime(cr.created_at) DESC, cr.id DESC
-     LIMIT 100'
-);
-$stmt->execute();
-$contacts = $stmt->fetchAll();
-
-$pageTitle = 'お問い合わせ一覧 | ' . APP_NAME;
-include __DIR__ . '/includes/header.php';
+$pdo=db(); $status=get_query_param('status','all'); $allowed=['all','未対応','対応中','対応済み','保留']; if(!in_array($status,$allowed,true))$status='all'; $q=trim(get_query_param('q')); $unhandled=get_query_param('unhandled')==='1';
+$where=[];$params=[]; if($unhandled){$where[]="c.status='未対応'";} elseif($status!=='all'){$where[]='c.status=:status';$params[':status']=$status;} if($q!==''){$where[]='(c.subject LIKE :q OR c.message LIKE :q OR c.name LIKE :q OR c.email LIKE :q)';$params[':q']='%'.$q.'%';} $whereSql=$where?'WHERE '.implode(' AND ',$where):'';
+$stmt=$pdo->prepare("SELECT c.* FROM contacts c $whereSql ORDER BY datetime(c.created_at) DESC,c.id DESC");$stmt->execute($params);$contacts=$stmt->fetchAll();
+$pageTitle='問い合わせ一覧 | 管理者画面 | '.APP_NAME; include __DIR__.'/includes/header.php';
 ?>
-<section class="card admin-hero">
-  <h2>お問い合わせ一覧</h2>
-  <p class="description">ユーザーから届いた機能要望・改善提案・困りごとを確認できます。直近100件を新しい順に表示します。</p>
-  <div class="button-row">
-    <a class="btn" href="admin_dashboard.php">管理者ダッシュボードへ戻る</a>
-  </div>
-</section>
-
-<section class="card">
-  <h3>受信内容</h3>
-  <div class="table-wrap">
-    <table class="contact-table">
-      <thead>
-        <tr>
-          <th>日時</th>
-          <th>種別</th>
-          <th>お名前</th>
-          <th>ユーザー</th>
-          <th>メール</th>
-          <th>内容</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if ($contacts === []): ?>
-          <tr><td colspan="6">お問い合わせはまだありません。</td></tr>
-        <?php endif; ?>
-        <?php foreach ($contacts as $contact): ?>
-          <tr>
-            <td data-label="日時"><?= e($contact['created_at']) ?></td>
-            <td data-label="種別"><?= e($contact['category']) ?></td>
-            <td data-label="お名前"><?= e($contact['name']) ?></td>
-            <td data-label="ユーザー"><?= e($contact['username'] ?? '未ログイン') ?></td>
-            <td data-label="メール"><?= e($contact['email'] ?? '-') ?></td>
-            <td data-label="内容"><?= nl2br(e($contact['message'])) ?></td>
-          </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-  </div>
-</section>
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<section class="card admin-hero"><h2>管理者専用：問い合わせ一覧</h2><div class="button-row"><a class="btn" href="admin_dashboard.php">管理者ダッシュボードへ戻る</a></div></section>
+<section class="card"><h3>検索・絞り込み</h3><form method="get" class="search-form"><div class="filter-grid"><label>状態<select name="status"><option value="all">すべて</option><?php foreach(['未対応','対応中','対応済み','保留'] as $s): ?><option value="<?= e($s) ?>" <?= $status===$s?'selected':'' ?>><?= e($s) ?></option><?php endforeach; ?></select></label><label>キーワード<input name="q" value="<?= e($q) ?>"></label><label class="checkbox-label"><input type="checkbox" name="unhandled" value="1" <?= $unhandled?'checked':'' ?>> 未対応のみ</label></div><div class="button-row"><button class="primary">検索する</button><a class="btn" href="admin_contacts.php">クリア</a></div></form></section>
+<section class="card"><h3>問い合わせ一覧</h3><div class="table-wrap"><table class="admin-table"><thead><tr><th>ID</th><th>状態</th><th>件名</th><th>名前</th><th>メール</th><th>ユーザーID</th><th>作成日時</th><th>詳細</th></tr></thead><tbody><?php foreach($contacts as $c): ?><tr><td><?= e($c['id']) ?></td><td><span class="badge <?= $c['status']==='未対応'?'badge-danger':'badge-user' ?>"><?= e($c['status']) ?></span></td><td><?= e($c['subject']) ?></td><td><?= e($c['name'] ?? '-') ?></td><td><?= e($c['email'] ?? '-') ?></td><td><?= e($c['user_id'] ?? '-') ?></td><td><?= e($c['created_at']) ?></td><td><a class="btn small" href="admin_contact_detail.php?id=<?= e($c['id']) ?>">詳細</a></td></tr><?php endforeach; if(!$contacts): ?><tr><td colspan="8">問い合わせはありません。</td></tr><?php endif; ?></tbody></table></div></section>
+<?php include __DIR__.'/includes/footer.php'; ?>

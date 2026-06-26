@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-require_login();
+require_active_user();
 
 $userId = current_user_id();
 ensure_default_expense_categories($userId);
@@ -127,7 +127,11 @@ document.addEventListener('DOMContentLoaded', function () {
   <h3>運営者メニュー</h3>
   <p class="description">管理者権限を持つユーザーだけに表示されます。</p>
   <div class="button-row">
-    <a class="btn primary" href="admin_dashboard.php">管理画面へ</a>
+    <a class="btn primary" href="admin_dashboard.php">管理画面</a>
+    <a class="btn" href="admin_users.php">ユーザー一覧</a>
+    <a class="btn" href="admin_contacts.php">問い合わせ一覧</a>
+    <a class="btn" href="admin_settings.php">アプリ設定</a>
+    <a class="btn" href="admin_logs.php">管理者操作ログ</a>
   </div>
 </section>
 <?php endif; ?>

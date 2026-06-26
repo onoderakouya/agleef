@@ -1,10 +1,49 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
 
-$contactEmail = defined('CONTACT_EMAIL') ? CONTACT_EMAIL : '';
-$subject = rawurlencode('アグリーフへのお問い合わせ');
-$body = rawurlencode("お問い合わせ種別：\nお名前：\n登録メールアドレス（任意）：\n\n内容：\n");
-$mailto = $contactEmail !== '' ? 'mailto:' . $contactEmail . '?subject=' . $subject . '&body=' . $body : '';
+$errors = [];
+$sent = false;
+$name = '';
+$email = '';
+$subject = '';
+$message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        $errors[] = '不正なリクエストです。';
+    }
+
+    $name = trim((string)($_POST['name'] ?? ''));
+    $email = trim((string)($_POST['email'] ?? ''));
+    $subject = trim((string)($_POST['subject'] ?? ''));
+    $message = trim((string)($_POST['message'] ?? ''));
+
+    if ($subject === '') {
+        $errors[] = '件名を入力してください。';
+    }
+    if ($message === '') {
+        $errors[] = 'お問い合わせ内容を入力してください。';
+    }
+    if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'メールアドレスの形式が正しくありません。';
+    }
+
+    if ($errors === []) {
+        $stmt = db()->prepare('INSERT INTO contacts (user_id, name, email, subject, message, status, created_at, updated_at)
+            VALUES (:user_id, :name, :email, :subject, :message, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)');
+        $stmt->execute([
+            ':user_id' => is_logged_in() ? current_user_id() : null,
+            ':name' => $name !== '' ? $name : null,
+            ':email' => $email !== '' ? $email : null,
+            ':subject' => $subject,
+            ':message' => $message,
+            ':status' => '未対応',
+        ]);
+        $sent = true;
+        $name = $email = $subject = $message = '';
+    }
+}
+
 $pageTitle = 'お問い合わせ | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
@@ -12,24 +51,23 @@ include __DIR__ . '/includes/header.php';
   <div class="public-hero">
     <p class="eyebrow">Contact</p>
     <h2>お問い合わせ</h2>
-    <p class="description">不具合報告、使い方の質問、登録情報・データ削除の相談などは、運営者までメールでご連絡ください。</p>
+    <p class="description">不具合報告、使い方の質問、改善要望などを送信できます。メール送信は行わず、運営者が管理画面で確認します。</p>
   </div>
 
-  <div class="public-card-grid public-card-grid--compact">
-    <section class="info-card"><h3>不具合報告</h3><p>画面が表示されない、登録できない、集計が想定と違うなど。</p></section>
-    <section class="info-card"><h3>使い方の質問</h3><p>作物・圃場・日誌・経費・売上・CSV出力などの操作相談。</p></section>
-    <section class="info-card"><h3>登録情報・データ削除の相談</h3><p>アカウント情報や保存データの削除についてのご相談。</p></section>
-    <section class="info-card"><h3>その他</h3><p>改善要望、β版へのご意見、その他のお問い合わせ。</p></section>
-  </div>
+  <?php if ($sent): ?>
+    <p class="alert success">お問い合わせを受け付けました。</p>
+  <?php endif; ?>
+  <?php if ($errors): ?>
+    <div class="alert error"><ul><?php foreach ($errors as $error): ?><li><?= e($error) ?></li><?php endforeach; ?></ul></div>
+  <?php endif; ?>
 
-  <div class="notice-box-app">
-    <p>返信が必要な場合は、登録メールアドレスや連絡先を本文に記載してください。</p>
-    <?php if ($mailto !== ''): ?>
-      <p>送信先：<a href="mailto:<?= e($contactEmail) ?>"><?= e($contactEmail) ?></a></p>
-      <div class="button-row"><a class="btn primary" href="<?= e($mailto) ?>">お問い合わせメールを送る</a></div>
-    <?php else: ?>
-      <p>現在、お問い合わせフォーム機能を準備中です。公開時に連絡先を掲載します。</p>
-    <?php endif; ?>
-  </div>
+  <form method="post" class="stack contact-form" novalidate>
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+    <label>お名前<input type="text" name="name" value="<?= e($name) ?>" maxlength="100"></label>
+    <label>メールアドレス<input type="email" name="email" value="<?= e($email) ?>" maxlength="255"></label>
+    <label>件名 <span class="required">必須</span><input type="text" name="subject" value="<?= e($subject) ?>" maxlength="200" required></label>
+    <label>お問い合わせ内容 <span class="required">必須</span><textarea name="message" rows="8" required><?= e($message) ?></textarea></label>
+    <div class="button-row"><button type="submit" class="primary">送信する</button></div>
+  </form>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
