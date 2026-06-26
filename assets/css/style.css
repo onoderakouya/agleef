@@ -217,6 +217,18 @@ h2 {
 
 h3 { font-size: 1.1rem; }
 
+.card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-title-row h3 {
+  margin-bottom: 0;
+}
+
 .description {
   color: #43544b;
   font-size: 0.98rem;
@@ -1249,6 +1261,8 @@ button:disabled,
 .auth-guide-links a, .footer-links a { color: var(--main); font-weight: 700; }
 .consent-note a { color: var(--main); font-weight: 800; }
 .beginner-card { border-color: #b9dbc7; background: linear-gradient(135deg, #ffffff 0%, #f1faf4 100%); }
+.onboarding-restore { display: none; margin-top: 8px; }
+.onboarding-restore.is-visible { display: inline-flex; }
 .onboarding-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
 .onboarding-item { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--text); text-decoration: none; font-weight: 700; }
 .onboarding-item:hover, .onboarding-item:focus-visible { border-color: #9cccaf; background: #f6fff8; outline: none; }
