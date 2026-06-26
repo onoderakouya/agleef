@@ -1,3 +1,18 @@
+# Redirect all public HTTP requests to HTTPS before PHP runs.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Respect common reverse-proxy HTTPS headers to avoid redirect loops behind TLS terminators.
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[?::1\]?)($|:) [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=308,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+</IfModule>
+
 # Prevent the SQLite database file from being downloaded directly from the web root.
 <Files "database.sqlite">
     <IfModule mod_authz_core.c>

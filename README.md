@@ -12,6 +12,7 @@
   - CSRFトークン検証
   - ログインユーザーの `user_id` によるデータ分離
   - `.htaccess` による `database.sqlite` の直接ダウンロード拒否（Apache 配置時）
+  - 公開環境でのHTTP→HTTPSリダイレクト、HSTS、Secure/HttpOnly/SameSiteセッションCookie
 
 ## 2. ディレクトリ構成
 
@@ -98,6 +99,15 @@
 - 新規登録導線: `register.php`
 - ログイン導線: `login.php`
 - ログイン中ユーザー向け導線: `dashboard.php`
+
+
+## HTTPS / 常時SSL
+
+公開環境では `includes/config.php` の `FORCE_HTTPS` が有効になっているため、HTTPアクセスはHTTPSへ `308 Permanent Redirect` されます。Apache環境では `.htaccess` でもPHP実行前にHTTPSへリダイレクトします。
+
+- `localhost` / `127.0.0.1` / `::1` / `*.localhost` はローカル開発用としてHTTPS強制の対象外です。
+- TLS終端プロキシやロードバランサー配下では `X-Forwarded-Proto: https` または `X-Forwarded-SSL: on` を信頼し、リダイレクトループを防ぎます。
+- HTTPS判定時は `Strict-Transport-Security` を送信し、セッションCookieに `Secure` / `HttpOnly` / `SameSite=Lax` を設定します。
 
 ## 5. セットアップ手順（ローカル）
 
