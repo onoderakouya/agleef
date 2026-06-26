@@ -537,3 +537,15 @@ a {
     padding: 42px 22px;
   }
 }
+
+.lp-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.lp-footer a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
