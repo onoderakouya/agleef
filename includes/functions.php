@@ -148,6 +148,26 @@ function validate_image_upload(array $file): string
         throw new RuntimeException('アップロード可能な画像形式は JPG / JPEG / PNG / WEBP のみです。');
     }
 
+    $filenameParts = array_filter(explode('.', strtolower($originalName)), static fn (string $part): bool => $part !== '');
+    $dangerousExtensions = ['php', 'php3', 'php4', 'php5', 'phtml', 'phar', 'cgi', 'pl', 'asp', 'aspx', 'jsp', 'jspx', 'sh'];
+    if (array_intersect($filenameParts, $dangerousExtensions) !== []) {
+        throw new RuntimeException('PHPファイルなど実行可能なファイルはアップロードできません。');
+    }
+
+    $tmpName = (string)($file['tmp_name'] ?? '');
+    $fileContents = file_get_contents($tmpName);
+    if ($fileContents === false) {
+        throw new RuntimeException('写真ファイルを正しく確認できませんでした。');
+    }
+
+    if (preg_match('/<\?(?:php|=)?/i', $fileContents) === 1) {
+        throw new RuntimeException('PHPコードを含むファイルはアップロードできません。');
+    }
+
+    if (@getimagesize($tmpName) === false) {
+        throw new RuntimeException('画像ファイルとして確認できませんでした。JPG / JPEG / PNG / WEBP を選択してください。');
+    }
+
     $allowedMimeTypes = [
         'image/jpeg' => ['jpg', 'jpeg'],
         'image/png' => ['png'],
