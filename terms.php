@@ -49,6 +49,7 @@ include __DIR__ . '/includes/header.php';
   <section class="legal-section">
     <h3>第7条（免責事項）</h3>
     <p>本サービスは、農業日誌、売上、経費等の記録を補助するためのサービスです。入力内容の正確性、税務・会計上の判断、申告結果等について、運営者は保証しません。重要な判断については、税理士、行政機関、専門家等に確認してください。</p>
+    <p class="alert annual-note">本サービスの集計は入力データをもとにした簡易集計です。 確定申告や税務上の最終判断は、税理士・税務署等へご確認ください。</p>
   </section>
 
   <section class="legal-section">

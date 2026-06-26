@@ -243,7 +243,7 @@ include __DIR__ . '/includes/header.php';
       <button class="btn primary" type="submit">表示</button>
     </form>
   </div>
-  <p class="alert annual-note">この集計は入力データをもとにした簡易集計です。確定申告用の正式な所得計算は、税理士・税務署等へ確認してください。</p>
+  <p class="alert annual-note">本サービスの集計は入力データをもとにした簡易集計です。 確定申告や税務上の最終判断は、税理士・税務署等へご確認ください。</p>
   <div class="button-row annual-export-actions">
     <a class="btn primary" href="export_csv.php?type=annual_summary&amp;year=<?= e((string)((int)$selectedYear)) ?>&amp;encoding=utf8_bom">この年の年間集計CSVを出力する</a>
     <a class="btn" href="export_csv.php?type=sales&amp;year=<?= e((string)((int)$selectedYear)) ?>&amp;encoding=utf8_bom">この年の売上CSVを出力する</a>

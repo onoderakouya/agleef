@@ -26,7 +26,7 @@ include __DIR__ . '/includes/header.php';
 <section class="card export-hero">
   <h2>CSV出力</h2>
   <p class="description">登録した売上・経費・日誌データをCSVで出力できます。Excelや会計ソフトへの取り込み、税理士への共有、確定申告準備に活用できます。</p>
-  <p class="alert annual-note">CSV出力は入力されたデータをそのまま出力する機能です。確定申告の最終確認は税理士・税務署等へ確認してください。</p>
+  <p class="alert annual-note">本サービスの集計は入力データをもとにした簡易集計です。 確定申告や税務上の最終判断は、税理士・税務署等へご確認ください。</p>
 </section>
 
 <section class="card">
