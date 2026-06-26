@@ -77,7 +77,7 @@ include __DIR__ . '/includes/header.php';
             <td data-label="ユーザー名"><?= e($user['username']) ?></td>
             <td data-label="登録日時"><?= e($user['created_at']) ?></td>
             <td data-label="更新日時"><?= e($user['updated_at'] ?? '-') ?></td>
-            <td data-label="権限"><span class="badge <?= ((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user' ?>"><?= ((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー' ?></span></td>
+            <td data-label="権限"><span class="badge <?= e((string)(((int)$user['is_admin'] === 1) ? 'badge-admin' : 'badge-user')) ?>"><?= e((string)(((int)$user['is_admin'] === 1) ? '管理者' : '一般ユーザー')) ?></span></td>
           </tr>
         <?php endforeach; ?>
       </tbody>

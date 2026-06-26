@@ -37,7 +37,7 @@ include __DIR__ . '/includes/header.php';
         出力対象
         <select name="type" required>
           <?php foreach ($exportTypes as $value => $label): ?>
-            <option value="<?= e($value) ?>" <?= $value === $selectedType ? 'selected' : '' ?>><?= e($label) ?></option>
+            <option value="<?= e($value) ?>" <?= e((string)($value === $selectedType ? 'selected' : '')) ?>><?= e($label) ?></option>
           <?php endforeach; ?>
         </select>
       </label>
@@ -46,7 +46,7 @@ include __DIR__ . '/includes/header.php';
         対象年
         <select name="year" required>
           <?php foreach ($yearRange as $year): ?>
-            <option value="<?= (int)$year ?>" <?= (int)$year === $selectedYear ? 'selected' : '' ?>><?= (int)$year ?>年</option>
+            <option value="<?= e((string)((int)$year)) ?>" <?= e((string)((int)$year === $selectedYear ? 'selected' : '')) ?>><?= e((string)((int)$year)) ?>年</option>
           <?php endforeach; ?>
         </select>
         <span class="form-help">年間集計CSVでは対象年を使用します。</span>
@@ -67,7 +67,7 @@ include __DIR__ . '/includes/header.php';
         文字コード
         <select name="encoding" required>
           <?php foreach ($encodings as $value => $label): ?>
-            <option value="<?= e($value) ?>" <?= $value === $selectedEncoding ? 'selected' : '' ?>><?= e($label) ?></option>
+            <option value="<?= e($value) ?>" <?= e((string)($value === $selectedEncoding ? 'selected' : '')) ?>><?= e($label) ?></option>
           <?php endforeach; ?>
         </select>
         <span class="form-help">Excelで開きやすいよう、初期値はUTF-8 BOM付きです。</span>

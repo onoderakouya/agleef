@@ -15,7 +15,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
 <header class="site-header">
   <div class="layout nav-wrap">
     <h1 class="brand-heading">
-      <a href="<?= is_logged_in() ? 'dashboard.php' : 'index.php' ?>" class="brand">
+      <a href="<?= e((string)(is_logged_in() ? 'dashboard.php' : 'index.php')) ?>" class="brand">
         <span class="brand-title">AGLEEF-アグリーフ-</span>
         <span class="brand-subtitle">農業日誌アプリ</span>
       </a>

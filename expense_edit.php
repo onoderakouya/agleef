@@ -156,21 +156,21 @@ include __DIR__ . '/includes/header.php';
       <select name="category_id" required>
         <option value="">選択してください</option>
         <?php foreach ($categories as $category): ?>
-          <option value="<?= (int)$category['id'] ?>" <?= $categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '' ?>><?= e($category['name']) ?></option>
+          <option value="<?= e((string)((int)$category['id'])) ?>" <?= e((string)($categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '')) ?>><?= e($category['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </label>
     <label>作物
-      <select name="crop_id"><option value="">指定しない</option><?php foreach ($crops as $crop): ?><option value="<?= (int)$crop['id'] ?>" <?= $cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '' ?>><?= e($crop['name']) ?></option><?php endforeach; ?></select>
+      <select name="crop_id"><option value="">指定しない</option><?php foreach ($crops as $crop): ?><option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)($cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '')) ?>><?= e($crop['name']) ?></option><?php endforeach; ?></select>
     </label>
     <label>圃場
-      <select name="field_id"><option value="">指定しない</option><?php foreach ($fields as $field): ?><option value="<?= (int)$field['id'] ?>" <?= $fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '' ?>><?= e($field['name']) ?></option><?php endforeach; ?></select>
+      <select name="field_id"><option value="">指定しない</option><?php foreach ($fields as $field): ?><option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)($fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '')) ?>><?= e($field['name']) ?></option><?php endforeach; ?></select>
     </label>
     <label>支払先・購入先<input type="text" name="payee" value="<?= e($payee) ?>"></label>
     <label>内容 <span aria-hidden="true">*</span><input type="text" name="description" value="<?= e($description) ?>" required></label>
     <label>金額 <span aria-hidden="true">*</span><input type="number" name="amount" value="<?= e($amount) ?>" min="1" step="1" inputmode="numeric" required></label>
     <label>支払方法
-      <select name="payment_method"><option value="">選択しない</option><?php foreach ($paymentMethods as $method): ?><option value="<?= e($method) ?>" <?= $paymentMethod === $method ? 'selected' : '' ?>><?= e($method) ?></option><?php endforeach; ?></select>
+      <select name="payment_method"><option value="">選択しない</option><?php foreach ($paymentMethods as $method): ?><option value="<?= e($method) ?>" <?= e((string)($paymentMethod === $method ? 'selected' : '')) ?>><?= e($method) ?></option><?php endforeach; ?></select>
     </label>
 
     <div class="photo-edit-block">
@@ -191,7 +191,7 @@ include __DIR__ . '/includes/header.php';
 
     <div class="button-row">
       <button class="primary" type="submit">更新する</button>
-      <a class="btn" href="expense_detail.php?id=<?= (int)$id ?>">詳細へ戻る</a>
+      <a class="btn" href="expense_detail.php?id=<?= e((string)((int)$id)) ?>">詳細へ戻る</a>
       <a class="btn" href="expense_list.php">一覧へ戻る</a>
     </div>
   </form>

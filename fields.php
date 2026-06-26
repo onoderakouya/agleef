@@ -56,15 +56,15 @@ include __DIR__ . '/includes/header.php';
   <h2>圃場管理</h2>
   <form method="post" class="stack">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-    <input type="hidden" name="action" value="<?= $editingField ? 'update' : 'create' ?>">
+    <input type="hidden" name="action" value="<?= e((string)($editingField ? 'update' : 'create')) ?>">
     <?php if ($editingField): ?>
-      <input type="hidden" name="id" value="<?= (int)$editingField['id'] ?>">
+      <input type="hidden" name="id" value="<?= e((string)((int)$editingField['id'])) ?>">
     <?php endif; ?>
     <label>圃場名
       <input type="text" name="name" value="<?= e($editingField['name'] ?? '') ?>" placeholder="例: 1号ハウス" required>
     </label>
     <div class="button-row">
-      <button class="primary" type="submit"><?= $editingField ? '更新する' : '登録する' ?></button>
+      <button class="primary" type="submit"><?= e((string)($editingField ? '更新する' : '登録する')) ?></button>
       <?php if ($editingField): ?><a class="btn" href="fields.php">キャンセル</a><?php endif; ?>
     </div>
   </form>
@@ -77,11 +77,11 @@ include __DIR__ . '/includes/header.php';
       <li>
         <span><?= e($field['name']) ?></span>
         <div class="inline-actions">
-          <a class="btn small" href="fields.php?edit=<?= (int)$field['id'] ?>">編集</a>
+          <a class="btn small" href="fields.php?edit=<?= e((string)((int)$field['id'])) ?>">編集</a>
           <form method="post" onsubmit="return confirm('削除してよいですか？');">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="id" value="<?= (int)$field['id'] ?>">
+            <input type="hidden" name="id" value="<?= e((string)((int)$field['id'])) ?>">
             <button type="submit" class="btn danger small">削除</button>
           </form>
         </div>

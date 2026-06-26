@@ -78,11 +78,11 @@ include __DIR__ . '/includes/header.php';
   </dl>
 
   <div class="button-row">
-    <a class="btn" href="diary_edit.php?id=<?= (int)$diary['id'] ?>">編集</a>
+    <a class="btn" href="diary_edit.php?id=<?= e((string)((int)$diary['id'])) ?>">編集</a>
     <a class="btn" href="diary_list.php">一覧に戻る</a>
     <form method="post" onsubmit="return confirm('この日誌を削除しますか？');">
       <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-      <input type="hidden" name="id" value="<?= (int)$diary['id'] ?>">
+      <input type="hidden" name="id" value="<?= e((string)((int)$diary['id'])) ?>">
       <input type="hidden" name="action" value="delete">
       <button class="btn danger" type="submit">削除</button>
     </form>

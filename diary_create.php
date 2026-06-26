@@ -109,10 +109,10 @@ include __DIR__ . '/includes/header.php';
     </label>
 
     <label>作物 <span aria-hidden="true">*</span>
-      <select name="crop_id" required <?= !$hasCrops ? 'disabled' : '' ?>>
+      <select name="crop_id" required <?= e((string)(!$hasCrops ? 'disabled' : '')) ?>>
         <option value="">選択してください</option>
         <?php foreach ($crops as $crop): ?>
-          <option value="<?= (int)$crop['id'] ?>" <?= $cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '' ?>>
+          <option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)($cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '')) ?>>
             <?= e($crop['name']) ?>
           </option>
         <?php endforeach; ?>
@@ -123,10 +123,10 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 
     <label>圃場 <span aria-hidden="true">*</span>
-      <select name="field_id" required <?= !$hasFields ? 'disabled' : '' ?>>
+      <select name="field_id" required <?= e((string)(!$hasFields ? 'disabled' : '')) ?>>
         <option value="">選択してください</option>
         <?php foreach ($fields as $field): ?>
-          <option value="<?= (int)$field['id'] ?>" <?= $fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '' ?>>
+          <option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)($fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '')) ?>>
             <?= e($field['name']) ?>
           </option>
         <?php endforeach; ?>
@@ -150,7 +150,7 @@ include __DIR__ . '/includes/header.php';
     </label>
 
     <div class="button-row">
-      <button class="primary" type="submit" <?= !$hasCrops || !$hasFields ? 'disabled' : '' ?>>登録</button>
+      <button class="primary" type="submit" <?= e((string)(!$hasCrops || !$hasFields ? 'disabled' : '')) ?>>登録</button>
       <a class="btn" href="diary_list.php">戻る</a>
     </div>
   </form>

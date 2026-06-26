@@ -127,7 +127,7 @@ include __DIR__ . '/includes/header.php';
       <select name="category_id" required>
         <option value="">選択してください</option>
         <?php foreach ($categories as $category): ?>
-          <option value="<?= (int)$category['id'] ?>" <?= $categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '' ?>><?= e($category['name']) ?></option>
+          <option value="<?= e((string)((int)$category['id'])) ?>" <?= e((string)($categoryId !== '' && (int)$categoryId === (int)$category['id'] ? 'selected' : '')) ?>><?= e($category['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </label>
@@ -136,7 +136,7 @@ include __DIR__ . '/includes/header.php';
       <select name="crop_id">
         <option value="">指定しない</option>
         <?php foreach ($crops as $crop): ?>
-          <option value="<?= (int)$crop['id'] ?>" <?= $cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '' ?>><?= e($crop['name']) ?></option>
+          <option value="<?= e((string)((int)$crop['id'])) ?>" <?= e((string)($cropId !== '' && (int)$cropId === (int)$crop['id'] ? 'selected' : '')) ?>><?= e($crop['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </label>
@@ -145,7 +145,7 @@ include __DIR__ . '/includes/header.php';
       <select name="field_id">
         <option value="">指定しない</option>
         <?php foreach ($fields as $field): ?>
-          <option value="<?= (int)$field['id'] ?>" <?= $fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '' ?>><?= e($field['name']) ?></option>
+          <option value="<?= e((string)((int)$field['id'])) ?>" <?= e((string)($fieldId !== '' && (int)$fieldId === (int)$field['id'] ? 'selected' : '')) ?>><?= e($field['name']) ?></option>
         <?php endforeach; ?>
       </select>
     </label>
@@ -166,7 +166,7 @@ include __DIR__ . '/includes/header.php';
       <select name="payment_method">
         <option value="">選択しない</option>
         <?php foreach ($paymentMethods as $method): ?>
-          <option value="<?= e($method) ?>" <?= $paymentMethod === $method ? 'selected' : '' ?>><?= e($method) ?></option>
+          <option value="<?= e($method) ?>" <?= e((string)($paymentMethod === $method ? 'selected' : '')) ?>><?= e($method) ?></option>
         <?php endforeach; ?>
       </select>
     </label>
