@@ -48,6 +48,7 @@ function initialize_database(PDO $pdo): void
     ensure_expense_tables($pdo);
     ensure_sales_table($pdo);
     ensure_contact_requests_table($pdo);
+    ensure_admin_operations_tables($pdo);
 
     $stmt = db_execute($pdo, 'SELECT COUNT(*) FROM users WHERE username = :username', [':username' => 'demo']);
 
@@ -80,7 +81,23 @@ function ensure_users_table(PDO $pdo): void
     if (!in_array('updated_at', $columnNames, true)) {
         db_execute($pdo, 'ALTER TABLE users ADD COLUMN updated_at TEXT');
         db_execute($pdo, "UPDATE users SET updated_at = COALESCE(created_at, CURRENT_TIMESTAMP) WHERE updated_at IS NULL OR updated_at = ''");
+        $columnNames[] = 'updated_at';
     }
+
+    foreach ([
+        'last_login_at' => 'TEXT',
+        'is_suspended' => 'INTEGER NOT NULL DEFAULT 0',
+        'suspended_at' => 'TEXT',
+        'suspended_reason' => 'TEXT',
+    ] as $column => $definition) {
+        if (!in_array($column, $columnNames, true)) {
+            db_execute($pdo, "ALTER TABLE users ADD COLUMN {$column} {$definition}");
+            $columnNames[] = $column;
+        }
+    }
+
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_users_is_suspended ON users(is_suspended)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_users_last_login_at ON users(last_login_at)');
 }
 
 function ensure_crop_field_tables(PDO $pdo): void
@@ -246,6 +263,55 @@ function ensure_contact_requests_table(PDO $pdo): void
 
     db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_contact_requests_created_at ON contact_requests(created_at DESC)');
     db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_contact_requests_user_id ON contact_requests(user_id)');
+}
+
+function ensure_admin_operations_tables(PDO $pdo): void
+{
+    db_execute(
+        $pdo,
+        'CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )'
+    );
+    db_execute($pdo, "INSERT OR IGNORE INTO app_settings (key, value, updated_at) VALUES ('registration_enabled', '1', CURRENT_TIMESTAMP)");
+
+    db_execute(
+        $pdo,
+        "CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            name TEXT,
+            email TEXT,
+            subject TEXT NOT NULL,
+            message TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT '未対応',
+            admin_memo TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+        )"
+    );
+
+    db_execute(
+        $pdo,
+        'CREATE TABLE IF NOT EXISTS admin_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            admin_user_id INTEGER NOT NULL,
+            action TEXT NOT NULL,
+            target_type TEXT,
+            target_id INTEGER,
+            detail TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE
+        )'
+    );
+
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_contacts_status_created ON contacts(status, created_at DESC)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_contacts_user_id ON contacts(user_id)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_admin_logs_created_at ON admin_logs(created_at DESC)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_admin_logs_admin_user_id ON admin_logs(admin_user_id)');
 }
 
 function ensure_expense_tables(PDO $pdo): void

@@ -19,15 +19,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
-    $stmt = db()->prepare('SELECT id, username, password_hash, is_admin FROM users WHERE username = :username LIMIT 1');
+    $stmt = db()->prepare('SELECT id, username, password_hash, is_admin, is_suspended FROM users WHERE username = :username LIMIT 1');
     $stmt->execute([':username' => $username]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
+        if ((int)($user['is_suspended'] ?? 0) === 1) {
+            set_flash('error', 'このアカウントは現在停止されています。心当たりがない場合はお問い合わせください。');
+            redirect('login.php');
+        }
+
+        $updateLogin = db()->prepare('UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = :id');
+        $updateLogin->execute([':id' => (int)$user['id']]);
+
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['is_admin'] = (int)$user['is_admin'];
+        $_SESSION['is_suspended'] = 0;
         set_flash('success', 'ログインしました。');
         redirect('dashboard.php');
     }

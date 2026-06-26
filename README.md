@@ -768,3 +768,16 @@ sqlite3 database.sqlite "SELECT id, username, is_admin FROM users WHERE is_admin
 ローカル環境では PHP ビルトインサーバーなどで起動し、未ログイン状態で `guide.php`、`faq.php`、`contact.php`、`privacy.php`、`terms.php` が表示できることを確認します。ログイン後は `dashboard.php` のチェックリスト、ヘッダーの使い方・FAQ・お問い合わせリンク、フッターの規約系リンクを確認してください。
 
 本番サーバーでは `https://honocca.com/agleef/guide.php` などの公開URLを直接開き、未ログインで閲覧できること、LP・ログイン・新規登録画面から各ページへ移動できること、スマホ幅で表示が崩れないことを確認してください。
+
+## 運用者向け管理機能のDB反映
+
+既存DBに管理機能（最終ログイン、停止、登録受付設定、問い合わせ、管理者操作ログ）を追加する場合は、必ず事前に `database.sqlite` をバックアップしてから以下を実行してください。
+
+```bash
+cp database.sqlite database.sqlite.$(date +%Y%m%d%H%M%S).bak
+sqlite3 database.sqlite < migrations/admin_operations_update.sql
+```
+
+SQLite の `ALTER TABLE ... ADD COLUMN` は、同じカラムを二重追加するとエラーになります。`migrations/admin_operations_update.sql` は既存DBへ1回だけ適用してください。適用済みか不明な場合は、先に `sqlite3 database.sqlite "PRAGMA table_info(users);"` で `last_login_at` / `is_suspended` / `suspended_at` / `suspended_reason` の有無を確認してください。
+
+新規登録受付は `config.php` の `ALLOW_REGISTRATION` が `false` の場合は強制停止です。`true` の場合のみ、管理画面の「アプリ設定」にある `app_settings.registration_enabled` のON/OFFが反映されます。

@@ -67,6 +67,10 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
             <a href="contact.php">お問い合わせ</a>
             <?php if (current_user_is_admin()): ?>
               <a href="admin_dashboard.php">管理画面</a>
+              <a href="admin_users.php">ユーザー一覧</a>
+              <a href="admin_contacts.php">問い合わせ一覧</a>
+              <a href="admin_settings.php">アプリ設定</a>
+              <a href="admin_logs.php">管理者操作ログ</a>
             <?php endif; ?>
           </div>
         </div>

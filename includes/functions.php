@@ -76,9 +76,57 @@ function verify_csrf_token(?string $token): bool
         && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+function is_registration_enabled(): bool
+{
+    if (defined('ALLOW_REGISTRATION') && ALLOW_REGISTRATION === false) {
+        return false;
+    }
+
+    try {
+        $stmt = db()->prepare("SELECT value FROM app_settings WHERE key = 'registration_enabled' LIMIT 1");
+        $stmt->execute();
+        $value = $stmt->fetchColumn();
+        return $value === false || (string)$value === '1';
+    } catch (Throwable $e) {
+        return defined('ALLOW_REGISTRATION') ? ALLOW_REGISTRATION === true : true;
+    }
+}
+
 function is_registration_allowed(): bool
 {
-    return defined('ALLOW_REGISTRATION') && ALLOW_REGISTRATION === true;
+    return is_registration_enabled();
+}
+
+function app_setting(string $key, ?string $default = null): ?string
+{
+    $stmt = db()->prepare('SELECT value FROM app_settings WHERE key = :key LIMIT 1');
+    $stmt->execute([':key' => $key]);
+    $value = $stmt->fetchColumn();
+    return $value === false ? $default : (string)$value;
+}
+
+function set_app_setting(string $key, string $value): void
+{
+    $stmt = db()->prepare('INSERT INTO app_settings (key, value, updated_at) VALUES (:key, :value, CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP');
+    $stmt->execute([':key' => $key, ':value' => $value]);
+}
+
+function log_admin_action(int $adminUserId, string $action, ?string $targetType = null, ?int $targetId = null, ?string $detail = null): void
+{
+    try {
+        $stmt = db()->prepare('INSERT INTO admin_logs (admin_user_id, action, target_type, target_id, detail, created_at)
+            VALUES (:admin_user_id, :action, :target_type, :target_id, :detail, CURRENT_TIMESTAMP)');
+        $stmt->execute([
+            ':admin_user_id' => $adminUserId,
+            ':action' => $action,
+            ':target_type' => $targetType,
+            ':target_id' => $targetId,
+            ':detail' => $detail,
+        ]);
+    } catch (Throwable $e) {
+        error_log('admin log failed: ' . $e->getMessage());
+    }
 }
 
 
