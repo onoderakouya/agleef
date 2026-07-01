@@ -1476,3 +1476,52 @@ body.has-photo-modal {
     right: 8px;
   }
 }
+
+.annual-ai-advice-card {
+  border-color: #bfe3cf;
+  background: linear-gradient(180deg, #f7fcf9 0%, #ffffff 100%);
+}
+
+.ai-advice-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #e1f4ea;
+  color: #1f6b3b;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 6px 12px;
+}
+
+.ai-advice-list {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.ai-advice-item {
+  border: 1px solid #d8e5dd;
+  border-left: 6px solid #6aa57d;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px 16px;
+}
+
+.ai-advice-item h4 {
+  margin: 0 0 6px;
+  color: #244532;
+}
+
+.ai-advice-item p {
+  margin: 0;
+  color: #43544a;
+}
+
+.ai-advice-item--success { border-left-color: #2f855a; }
+.ai-advice-item--info { border-left-color: #3182ce; }
+.ai-advice-item--warning { border-left-color: #d69e2e; }
+.ai-advice-item--danger { border-left-color: #c53030; }
+
+.ai-advice-error {
+  margin: 16px 0;
+}
