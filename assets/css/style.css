@@ -1521,3 +1521,7 @@ body.has-photo-modal {
 .ai-advice-item--info { border-left-color: #3182ce; }
 .ai-advice-item--warning { border-left-color: #d69e2e; }
 .ai-advice-item--danger { border-left-color: #c53030; }
+
+.ai-advice-error {
+  margin: 16px 0;
+}
