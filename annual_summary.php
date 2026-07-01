@@ -223,6 +223,67 @@ $missingReceiptStmt = db()->prepare(
 $missingReceiptStmt->execute([':user_id' => $userId, ':start_date' => $startDate, ':end_date' => $endDate]);
 $missingReceiptExpenses = $missingReceiptStmt->fetchAll();
 
+
+$annualAdvice = [];
+$grossProfit = $grossTotal - $expenseTotal;
+$netProfit = $netTotal - $expenseTotal;
+$expenseRatio = $grossTotal > 0 ? ($expenseTotal / $grossTotal) * 100 : null;
+$netCollectionRatio = $grossTotal > 0 ? ($netTotal / $grossTotal) * 100 : null;
+$unpaidTotal = array_sum(array_map(static fn(array $row): int => (int)$row['net_amount'], $unpaidSales));
+$missingReceiptTotal = array_sum(array_map(static fn(array $row): int => (int)$row['amount'], $missingReceiptExpenses));
+$activeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => (int)$row['gross_total'] > 0 || (int)$row['expense_total'] > 0));
+$negativeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => ((int)$row['net_total'] - (int)$row['expense_total']) < 0));
+$topExpenseCategory = $categoryTotals[0] ?? null;
+$topChannel = $channelTotals[0] ?? null;
+
+if ($grossTotal === 0 && $expenseTotal === 0) {
+    $annualAdvice[] = ['type' => 'info', 'title' => 'まずは売上・経費の入力を増やしましょう', 'body' => '対象年の売上・経費がまだ登録されていないため、分析の精度を上げるには日々の取引入力が最優先です。'];
+} else {
+    if ($netProfit < 0) {
+        $annualAdvice[] = ['type' => 'danger', 'title' => '入金額ベースの差引がマイナスです', 'body' => '経費合計が差引入金額を上回っています。金額の大きい経費カテゴリを見直し、価格設定や販売数量の改善余地を確認しましょう。'];
+    } elseif ($grossProfit < 0) {
+        $annualAdvice[] = ['type' => 'warning', 'title' => '売上総額ベースの差引がマイナスです', 'body' => '売上総額より経費が大きい状態です。固定的な支出や収穫・販売時期とのずれがないかを確認しましょう。'];
+    } else {
+        $annualAdvice[] = ['type' => 'success', 'title' => '年間の差引はプラスです', 'body' => 'この調子で記録を続けつつ、利益率の高い作物・販売経路へ注力できるか確認しましょう。'];
+    }
+
+    if ($expenseRatio !== null && $expenseRatio >= 70) {
+        $annualAdvice[] = ['type' => 'warning', 'title' => '経費率が高めです', 'body' => '経費合計は売上総額の約' . format_percent($expenseTotal, $grossTotal) . 'です。上位カテゴリの単価交渉・購入頻度・代替品を確認すると改善点を見つけやすくなります。'];
+    } elseif ($expenseRatio !== null && $expenseRatio <= 35 && $grossTotal > 0) {
+        $annualAdvice[] = ['type' => 'success', 'title' => '経費率は抑えられています', 'body' => '経費合計は売上総額の約' . format_percent($expenseTotal, $grossTotal) . 'です。品質維持に必要な投資まで削りすぎていないかだけ定期的に確認しましょう。'];
+    }
+
+    if ($netCollectionRatio !== null && $netCollectionRatio < 85) {
+        $annualAdvice[] = ['type' => 'warning', 'title' => '手数料・送料・未入金の影響を確認しましょう', 'body' => '差引入金額は売上総額の約' . format_percent($netTotal, $grossTotal) . 'です。販売手数料、送料、入金状況を分けて確認すると改善策を立てやすくなります。'];
+    }
+}
+
+if ($topExpenseCategory !== null && $expenseTotal > 0) {
+    $annualAdvice[] = ['type' => 'info', 'title' => '最大の経費カテゴリを重点確認', 'body' => '「' . $topExpenseCategory['category_name'] . '」が経費全体の' . format_percent((int)$topExpenseCategory['total_amount'], $expenseTotal) . 'を占めています。まずここから明細確認を始めるのがおすすめです。'];
+}
+
+if ($topChannel !== null && $grossTotal > 0) {
+    $annualAdvice[] = ['type' => 'info', 'title' => '主力の販売経路を把握しましょう', 'body' => '「' . $topChannel['channel_name'] . '」が売上総額の' . format_percent((int)$topChannel['gross_total'], $grossTotal) . 'を占めています。入金額や手数料も合わせて比較しましょう。'];
+}
+
+if ($unpaidTotal > 0) {
+    $annualAdvice[] = ['type' => 'warning', 'title' => '未入金フォローが必要です', 'body' => '未入金・一部入金の差引入金額が合計' . format_yen($unpaidTotal) . 'あります。入金予定日と請求先への確認状況を整理しましょう。'];
+}
+
+if ($missingReceiptTotal > 0) {
+    $annualAdvice[] = ['type' => 'warning', 'title' => '領収書写真の不足があります', 'body' => '領収書写真なしの経費が合計' . format_yen($missingReceiptTotal) . 'あります。後から確認しやすいよう、写真の追加をおすすめします。'];
+}
+
+if (count($negativeMonths) >= 3) {
+    $annualAdvice[] = ['type' => 'warning', 'title' => '赤字月が複数あります', 'body' => count($negativeMonths) . 'か月で入金額ベース差引がマイナスです。季節要因か、特定月に支出が偏っているかを月別集計で確認しましょう。'];
+}
+
+if (count($activeMonths) <= 2 && ($grossTotal > 0 || $expenseTotal > 0)) {
+    $annualAdvice[] = ['type' => 'info', 'title' => '記録月が少なめです', 'body' => '対象年で売上・経費の動きがある月は' . count($activeMonths) . 'か月です。入力漏れがないか確認すると年間分析の信頼性が上がります。'];
+}
+
+$annualAdvice = array_slice($annualAdvice, 0, 6);
+
 $yenClass = static fn(int $amount): string => $amount < 0 ? 'amount-negative' : 'amount-positive';
 
 $pageTitle = '年間集計 | ' . APP_NAME;
@@ -261,6 +322,26 @@ include __DIR__ . '/includes/header.php';
     <div class="summary-card annual-summary-card"><span>売上総額ベース簡易差引</span><strong class="<?= e($yenClass($grossTotal - $expenseTotal)) ?>"><?= e(format_yen($grossTotal - $expenseTotal)) ?></strong></div>
     <div class="summary-card annual-summary-card"><span>入金額ベース簡易差引</span><strong class="<?= e($yenClass($netTotal - $expenseTotal)) ?>"><?= e(format_yen($netTotal - $expenseTotal)) ?></strong></div>
   </div>
+</section>
+
+
+<section class="card annual-ai-advice-card">
+  <div class="card-title-row">
+    <div>
+      <h3>AIアドバイス</h3>
+      <p class="description">入力済みの売上・経費・未入金・領収書状況から、次に確認したいポイントを自動で提案します。</p>
+    </div>
+    <span class="ai-advice-badge">自動分析</span>
+  </div>
+  <div class="ai-advice-list">
+    <?php foreach ($annualAdvice as $advice): ?>
+      <article class="ai-advice-item ai-advice-item--<?= e($advice['type']) ?>">
+        <h4><?= e($advice['title']) ?></h4>
+        <p><?= e($advice['body']) ?></p>
+      </article>
+    <?php endforeach; ?>
+  </div>
+  <p class="description">※ このアドバイスは入力データに基づく簡易的な自動提案です。経営・税務上の最終判断は専門家へご相談ください。</p>
 </section>
 
 <section class="card">
