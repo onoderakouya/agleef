@@ -181,8 +181,12 @@ include __DIR__ . '/includes/header.php';
       <?php else: ?>
         <p class="description">現在、領収書写真はありません。</p>
       <?php endif; ?>
-      <label>新しい領収書写真
-        <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp">
+      <label class="file-upload-field">新しい領収書写真
+        <span class="file-upload-box">
+          <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp">
+          <span class="file-upload-button">画像を選択する</span>
+          <span class="file-upload-note">クリックして領収書写真を差し替え</span>
+        </span>
         <span class="description">新しい写真を選ぶと差し替えます。JPG / JPEG / PNG / WEBP、最大3MB。</span>
       </label>
     </div>
