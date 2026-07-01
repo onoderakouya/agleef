@@ -95,6 +95,23 @@ $yearGrossTotal = (int)$yearStmt->fetchColumn();
 $channelStmt = db()->prepare("SELECT COALESCE(NULLIF(sales_channel, ''), '未設定') AS channel_name, COALESCE(SUM(gross_amount), 0) AS total_amount FROM sales s WHERE {$whereSql} GROUP BY channel_name ORDER BY total_amount DESC, channel_name ASC");
 $channelStmt->execute($params);
 $channelTotals = $channelStmt->fetchAll();
+$channelChartColors = ['#2f855a', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#ec4899', '#64748b'];
+$channelChartSegments = [];
+$channelChartPosition = 0.0;
+if ($totalGross > 0) {
+    foreach ($channelTotals as $index => $row) {
+        $amount = (int)$row['total_amount'];
+        if ($amount <= 0) {
+            continue;
+        }
+        $percentage = ($amount / $totalGross) * 100;
+        $nextPosition = $channelChartPosition + $percentage;
+        $color = $channelChartColors[$index % count($channelChartColors)];
+        $channelChartSegments[] = sprintf('%s %.4F%% %.4F%%', $color, $channelChartPosition, $nextPosition);
+        $channelChartPosition = $nextPosition;
+    }
+}
+$channelChartStyle = $channelChartSegments ? 'background: conic-gradient(' . implode(', ', $channelChartSegments) . ');' : '';
 
 $hasSearchCondition = $dateFrom !== '' || $dateTo !== '' || $salesChannel !== '' || $cropId !== '' || $fieldId !== '' || $paymentStatus !== '' || $keyword !== '';
 $pageTitle = '売上一覧 | ' . APP_NAME;
@@ -133,7 +150,36 @@ include __DIR__ . '/includes/header.php';
   <?php if ($hasSearchCondition): ?><p class="alert success">条件に一致する売上を表示しています。</p><?php endif; ?>
 
   <?php if ($channelTotals): ?>
-    <div class="category-summary"><h3>販売経路別合計（表示条件内）</h3><ul><?php foreach ($channelTotals as $row): ?><li><span><?= e($row['channel_name']) ?></span><strong><?= e(format_yen((int)$row['total_amount'])) ?></strong></li><?php endforeach; ?></ul></div>
+    <div class="category-summary">
+      <div class="category-summary-header">
+        <h3>販売経路別合計（表示条件内）</h3>
+        <p>表示中の売上総額合計に対する販売経路ごとの割合を確認できます。</p>
+      </div>
+      <?php if ($channelChartStyle !== ''): ?>
+        <div class="category-chart-wrap">
+          <div class="category-pie-chart" style="<?= e($channelChartStyle) ?>" role="img" aria-label="販売経路別割合の円グラフ"></div>
+          <ul class="category-chart-legend">
+            <?php foreach ($channelTotals as $index => $row): ?>
+              <?php
+                $amount = (int)$row['total_amount'];
+                $percentage = $totalGross > 0 ? ($amount / $totalGross) * 100 : 0;
+                $color = $channelChartColors[$index % count($channelChartColors)];
+              ?>
+              <li>
+                <span class="category-color" style="background-color: <?= e($color) ?>;"></span>
+                <span class="category-name"><?= e($row['channel_name']) ?></span>
+                <strong><?= e(number_format($percentage, 1)) ?>%</strong>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        </div>
+      <?php endif; ?>
+      <ul class="category-total-list">
+        <?php foreach ($channelTotals as $row): ?>
+          <li><span><?= e($row['channel_name']) ?></span><strong><?= e(format_yen((int)$row['total_amount'])) ?></strong></li>
+        <?php endforeach; ?>
+      </ul>
+    </div>
   <?php endif; ?>
 
   <div class="table-wrap"><table class="sale-table"><thead><tr><th>売上日</th><th>販売経路</th><th>作物</th><th>圃場</th><th>販売先</th><th>品目</th><th>数量</th><th>売上総額</th><th>手数料</th><th>送料</th><th>差引入金額</th><th>入金状況</th><th>明細</th><th>操作</th></tr></thead><tbody>
