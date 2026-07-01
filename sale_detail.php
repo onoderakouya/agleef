@@ -44,10 +44,62 @@ include __DIR__ . '/includes/header.php';
 <section class="card">
   <h3>売上明細・伝票写真</h3>
   <?php if (!empty($sale['document_path'])): ?>
-    <div class="photo-box"><img class="diary-photo" src="<?= e($sale['document_path']) ?>" alt="売上明細・伝票写真"></div>
+    <div class="photo-box">
+      <button type="button" class="photo-zoom-trigger" aria-haspopup="dialog" aria-controls="sale-document-modal">
+        <img class="diary-photo" src="<?= e($sale['document_path']) ?>" alt="売上明細・伝票写真">
+        <span class="photo-zoom-hint">クリックして拡大</span>
+      </button>
+    </div>
+    <div id="sale-document-modal" class="photo-modal" role="dialog" aria-modal="true" aria-label="売上明細・伝票写真の拡大表示" hidden>
+      <div class="photo-modal-backdrop" data-photo-modal-close></div>
+      <div class="photo-modal-content">
+        <button type="button" class="photo-modal-close" data-photo-modal-close aria-label="拡大表示を閉じる">×</button>
+        <img class="photo-modal-image" src="<?= e($sale['document_path']) ?>" alt="売上明細・伝票写真の拡大表示">
+      </div>
+    </div>
   <?php else: ?>
     <p class="description">明細写真なし</p>
   <?php endif; ?>
 </section>
 <section class="card"><div class="button-row"><a class="btn primary" href="sale_edit.php?id=<?= e((string)((int)$sale['id'])) ?>">編集する</a><a class="btn" href="sale_list.php">一覧へ戻る</a></div></section>
+<?php if (!empty($sale['document_path'])): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var trigger = document.querySelector('.photo-zoom-trigger');
+  var modal = document.getElementById('sale-document-modal');
+  var closeButtons = document.querySelectorAll('[data-photo-modal-close]');
+
+  if (!trigger || !modal) {
+    return;
+  }
+
+  function openModal() {
+    modal.hidden = false;
+    document.body.classList.add('has-photo-modal');
+    var closeButton = modal.querySelector('.photo-modal-close');
+    if (closeButton) {
+      closeButton.focus();
+    }
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    document.body.classList.remove('has-photo-modal');
+    trigger.focus();
+  }
+
+  trigger.addEventListener('click', openModal);
+
+  closeButtons.forEach(function (button) {
+    button.addEventListener('click', closeModal);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !modal.hidden) {
+      closeModal();
+    }
+  });
+});
+</script>
+<?php endif; ?>
 <?php include __DIR__ . '/includes/footer.php'; ?>
