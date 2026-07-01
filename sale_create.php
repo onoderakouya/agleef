@@ -137,7 +137,7 @@ include __DIR__ . '/includes/header.php';
     <div class="form-grid-3"><label>手数料<input type="number" name="fee_amount" value="<?= e($feeAmount) ?>" min="0" step="1" inputmode="numeric"></label><label>送料<input type="number" name="shipping_amount" value="<?= e($shippingAmount) ?>" min="0" step="1" inputmode="numeric"></label><label>差引入金額<input type="number" name="net_amount" value="<?= e($netAmount) ?>" min="0" step="1" inputmode="numeric"></label></div>
     <label>入金状況<select name="payment_status"><?php foreach ($paymentStatuses as $status): ?><option value="<?= e($status) ?>" <?= e((string)($paymentStatus === $status ? 'selected' : '')) ?>><?= e($status) ?></option><?php endforeach; ?></select></label>
     <label>入金日<input type="date" name="payment_date" value="<?= e($paymentDate) ?>"></label>
-    <label>売上明細・伝票写真<input type="file" name="document" accept="image/jpeg,image/png,image/webp"><span class="description">JPG / JPEG / PNG / WEBP、最大3MB。</span></label>
+    <label class="file-upload-field">売上明細・伝票写真<span class="file-upload-box"><input type="file" name="document" accept="image/jpeg,image/png,image/webp"><span class="file-upload-button">画像を選択する</span><span class="file-upload-note">クリックして明細写真をアップロード</span></span><span class="description">JPG / JPEG / PNG / WEBP、最大3MB。</span></label>
     <label>メモ<textarea name="memo" rows="4"><?= e($memo) ?></textarea></label>
     <div class="button-row"><button class="primary" type="submit">登録する</button><a class="btn" href="sale_list.php">一覧へ戻る</a></div>
   </form>
