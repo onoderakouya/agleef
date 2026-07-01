@@ -208,7 +208,7 @@ function validate_image_upload(array $file): string
         throw new RuntimeException('写真ファイルを正しく確認できませんでした。');
     }
 
-    if (preg_match('/<\?(?:php|=)?/i', $fileContents) === 1) {
+    if (preg_match('/<\?(?:php\b|=)/i', $fileContents) === 1) {
         throw new RuntimeException('PHPコードを含むファイルはアップロードできません。');
     }
 
