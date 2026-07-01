@@ -113,9 +113,9 @@ document.addEventListener('DOMContentLoaded', function () {
   <h3>簡易サマリー</h3>
   <p class="description">差引は「売上合計 − 経費合計」の簡易目安です。本格的な所得計算ではありません。</p>
   <div class="summary-grid">
-    <div class="summary-card"><span>今月の売上</span><strong><?= e(format_yen($monthSaleTotal)) ?></strong></div>
-    <div class="summary-card"><span>今月の経費</span><strong><?= e(format_yen($monthExpenseTotal)) ?></strong></div>
-    <div class="summary-card"><span>今月の差引</span><strong><?= e(format_yen($monthSaleTotal - $monthExpenseTotal)) ?></strong></div>
+    <div class="summary-card summary-card--month"><span>今月の売上</span><strong><?= e(format_yen($monthSaleTotal)) ?></strong></div>
+    <div class="summary-card summary-card--month"><span>今月の経費</span><strong><?= e(format_yen($monthExpenseTotal)) ?></strong></div>
+    <div class="summary-card summary-card--month"><span>今月の差引</span><strong><?= e(format_yen($monthSaleTotal - $monthExpenseTotal)) ?></strong></div>
     <div class="summary-card"><span>今年の売上</span><strong><?= e(format_yen($yearSaleTotal)) ?></strong></div>
     <div class="summary-card"><span>今年の経費</span><strong><?= e(format_yen($yearExpenseTotal)) ?></strong></div>
     <div class="summary-card"><span>今年の差引</span><strong><?= e(format_yen($yearSaleTotal - $yearExpenseTotal)) ?></strong></div>
