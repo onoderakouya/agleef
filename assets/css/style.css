@@ -725,6 +725,11 @@ input[type="number"] {
   padding: 14px;
 }
 
+.summary-card--month {
+  border-color: #c7def8;
+  background: #eef6ff;
+}
+
 .summary-card span {
   display: block;
   color: #607268;
