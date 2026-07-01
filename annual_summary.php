@@ -224,130 +224,135 @@ $missingReceiptStmt->execute([':user_id' => $userId, ':start_date' => $startDate
 $missingReceiptExpenses = $missingReceiptStmt->fetchAll();
 
 
-$unpaidTotal = array_sum(array_map(static fn(array $row): int => (int)$row['net_amount'], $unpaidSales));
-$missingReceiptTotal = array_sum(array_map(static fn(array $row): int => (int)$row['amount'], $missingReceiptExpenses));
-$negativeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => ((int)$row['net_total'] - (int)$row['expense_total']) < 0));
-$activeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => (int)$row['gross_total'] > 0 || (int)$row['expense_total'] > 0));
+$showAnnualAiAdvice = false; // 将来的にAI分析機能を再開する場合は true に変更します。
 
-$annualAdvice = [];
-$annualAdviceError = '';
-$openAiApiKey = trim((string)getenv('OPENAI_API_KEY'));
-$openAiModel = trim((string)(getenv('OPENAI_MODEL') ?: 'gpt-5.4-mini'));
+if ($showAnnualAiAdvice) {
+    $unpaidTotal = array_sum(array_map(static fn(array $row): int => (int)$row['net_amount'], $unpaidSales));
+    $missingReceiptTotal = array_sum(array_map(static fn(array $row): int => (int)$row['amount'], $missingReceiptExpenses));
+    $negativeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => ((int)$row['net_total'] - (int)$row['expense_total']) < 0));
+    $activeMonths = array_values(array_filter($monthlyRows, static fn(array $row): bool => (int)$row['gross_total'] > 0 || (int)$row['expense_total'] > 0));
 
-if ($openAiApiKey === '') {
-    $annualAdviceError = 'OPENAI_API_KEY が未設定のため、AIによるリアルタイム分析は実行されていません。サーバー環境変数にAPIキーを設定すると、表示のたびにAIが最新データを分析して文章を生成します。';
-} else {
-    $monthlyForAi = array_map(static function (array $row): array {
-        return [
-            'month' => (int)$row['month'],
-            'gross_total' => (int)$row['gross_total'],
-            'net_total' => (int)$row['net_total'],
-            'expense_total' => (int)$row['expense_total'],
-            'gross_profit' => (int)$row['gross_total'] - (int)$row['expense_total'],
-            'net_profit' => (int)$row['net_total'] - (int)$row['expense_total'],
-        ];
-    }, array_values($monthlyRows));
+    $annualAdvice = [];
+    $annualAdviceError = '';
+    $openAiApiKey = trim((string)getenv('OPENAI_API_KEY'));
+    $openAiModel = trim((string)(getenv('OPENAI_MODEL') ?: 'gpt-5.4-mini'));
 
-    $analysisData = [
-        'year' => $selectedYear,
-        'period' => ['start' => $startDate, 'end' => $endDate],
-        'summary' => [
-            'gross_total' => $grossTotal,
-            'net_total' => $netTotal,
-            'expense_total' => $expenseTotal,
-            'gross_profit' => $grossTotal - $expenseTotal,
-            'net_profit' => $netTotal - $expenseTotal,
-            'expense_ratio_percent' => $grossTotal > 0 ? round(($expenseTotal / $grossTotal) * 100, 1) : null,
-            'net_collection_ratio_percent' => $grossTotal > 0 ? round(($netTotal / $grossTotal) * 100, 1) : null,
-        ],
-        'monthly' => $monthlyForAi,
-        'top_expense_categories' => array_map(static fn(array $row): array => [
-            'name' => (string)$row['category_name'],
-            'amount' => (int)$row['total_amount'],
-        ], array_slice($categoryTotals, 0, 5)),
-        'top_sales_channels' => array_map(static fn(array $row): array => [
-            'name' => (string)$row['channel_name'],
-            'gross_total' => (int)$row['gross_total'],
-            'net_total' => (int)$row['net_total'],
-        ], array_slice($channelTotals, 0, 5)),
-        'checks' => [
-            'unpaid_sales_count' => count($unpaidSales),
-            'unpaid_net_total' => $unpaidTotal,
-            'missing_receipt_count' => count($missingReceiptExpenses),
-            'missing_receipt_total' => $missingReceiptTotal,
-            'negative_month_count' => count($negativeMonths),
-            'active_month_count' => count($activeMonths),
-        ],
-    ];
-
-    $payload = [
-        'model' => $openAiModel,
-        'store' => false,
-        'input' => [
-            [
-                'role' => 'developer',
-                'content' => [[
-                    'type' => 'input_text',
-                    'text' => 'あなたは農業経営の記録アプリに組み込まれた分析アシスタントです。入力データだけを根拠に、日本語で簡潔かつ実務的に助言してください。税務・会計・法務の断定は避け、必要に応じて専門家確認を促してください。出力はJSONのみ。形式: {"advice":[{"type":"success|info|warning|danger","title":"20文字程度","body":"120文字以内"}]}。最大5件。',
-                ]],
-            ],
-            [
-                'role' => 'user',
-                'content' => [[
-                    'type' => 'input_text',
-                    'text' => "次の年間集計データを分析し、優先度の高い順にアドバイスを作成してください。\n" . json_encode($analysisData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                ]],
-            ],
-        ],
-    ];
-
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $openAiApiKey,
-            ],
-            'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 20,
-            'ignore_errors' => true,
-        ],
-    ]);
-
-    $responseBody = @file_get_contents('https://api.openai.com/v1/responses', false, $context);
-    $statusLine = $http_response_header[0] ?? '';
-    $statusCode = preg_match('/\s(\d{3})\s/', $statusLine, $matches) ? (int)$matches[1] : 0;
-
-    if ($responseBody === false || $statusCode < 200 || $statusCode >= 300) {
-        $annualAdviceError = 'AI分析の取得に失敗しました。時間をおいて再度お試しください。';
+    if ($openAiApiKey === '') {
+        $annualAdviceError = 'OPENAI_API_KEY が未設定のため、AIによるリアルタイム分析は実行されていません。サーバー環境変数にAPIキーを設定すると、表示のたびにAIが最新データを分析して文章を生成します。';
     } else {
-        $responseJson = json_decode($responseBody, true);
-        $outputText = is_array($responseJson) ? (string)($responseJson['output_text'] ?? '') : '';
+        $monthlyForAi = array_map(static function (array $row): array {
+            return [
+                'month' => (int)$row['month'],
+                'gross_total' => (int)$row['gross_total'],
+                'net_total' => (int)$row['net_total'],
+                'expense_total' => (int)$row['expense_total'],
+                'gross_profit' => (int)$row['gross_total'] - (int)$row['expense_total'],
+                'net_profit' => (int)$row['net_total'] - (int)$row['expense_total'],
+            ];
+        }, array_values($monthlyRows));
 
-        if ($outputText === '' && is_array($responseJson['output'] ?? null)) {
-            foreach ($responseJson['output'] as $outputItem) {
-                foreach (($outputItem['content'] ?? []) as $contentItem) {
-                    $outputText .= (string)($contentItem['text'] ?? '');
+        $analysisData = [
+            'year' => $selectedYear,
+            'period' => ['start' => $startDate, 'end' => $endDate],
+            'summary' => [
+                'gross_total' => $grossTotal,
+                'net_total' => $netTotal,
+                'expense_total' => $expenseTotal,
+                'gross_profit' => $grossTotal - $expenseTotal,
+                'net_profit' => $netTotal - $expenseTotal,
+                'expense_ratio_percent' => $grossTotal > 0 ? round(($expenseTotal / $grossTotal) * 100, 1) : null,
+                'net_collection_ratio_percent' => $grossTotal > 0 ? round(($netTotal / $grossTotal) * 100, 1) : null,
+            ],
+            'monthly' => $monthlyForAi,
+            'top_expense_categories' => array_map(static fn(array $row): array => [
+                'name' => (string)$row['category_name'],
+                'amount' => (int)$row['total_amount'],
+            ], array_slice($categoryTotals, 0, 5)),
+            'top_sales_channels' => array_map(static fn(array $row): array => [
+                'name' => (string)$row['channel_name'],
+                'gross_total' => (int)$row['gross_total'],
+                'net_total' => (int)$row['net_total'],
+            ], array_slice($channelTotals, 0, 5)),
+            'checks' => [
+                'unpaid_sales_count' => count($unpaidSales),
+                'unpaid_net_total' => $unpaidTotal,
+                'missing_receipt_count' => count($missingReceiptExpenses),
+                'missing_receipt_total' => $missingReceiptTotal,
+                'negative_month_count' => count($negativeMonths),
+                'active_month_count' => count($activeMonths),
+            ],
+        ];
+
+        $payload = [
+            'model' => $openAiModel,
+            'store' => false,
+            'input' => [
+                [
+                    'role' => 'developer',
+                    'content' => [[
+                        'type' => 'input_text',
+                        'text' => 'あなたは農業経営の記録アプリに組み込まれた分析アシスタントです。入力データだけを根拠に、日本語で簡潔かつ実務的に助言してください。税務・会計・法務の断定は避け、必要に応じて専門家確認を促してください。出力はJSONのみ。形式: {"advice":[{"type":"success|info|warning|danger","title":"20文字程度","body":"120文字以内"}]}。最大5件。',
+                    ]],
+                ],
+                [
+                    'role' => 'user',
+                    'content' => [[
+                        'type' => 'input_text',
+                        'text' => "次の年間集計データを分析し、優先度の高い順にアドバイスを作成してください。\n" . json_encode($analysisData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ]],
+                ],
+            ],
+        ];
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $openAiApiKey,
+                ],
+                'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'timeout' => 20,
+                'ignore_errors' => true,
+            ],
+        ]);
+
+        $responseBody = @file_get_contents('https://api.openai.com/v1/responses', false, $context);
+        $statusLine = $http_response_header[0] ?? '';
+        $statusCode = preg_match('/\s(\d{3})\s/', $statusLine, $matches) ? (int)$matches[1] : 0;
+
+        if ($responseBody === false || $statusCode < 200 || $statusCode >= 300) {
+            $annualAdviceError = 'AI分析の取得に失敗しました。時間をおいて再度お試しください。';
+        } else {
+            $responseJson = json_decode($responseBody, true);
+            $outputText = is_array($responseJson) ? (string)($responseJson['output_text'] ?? '') : '';
+
+            if ($outputText === '' && is_array($responseJson['output'] ?? null)) {
+                foreach ($responseJson['output'] as $outputItem) {
+                    foreach (($outputItem['content'] ?? []) as $contentItem) {
+                        $outputText .= (string)($contentItem['text'] ?? '');
+                    }
                 }
             }
-        }
 
-        $decodedAdvice = json_decode($outputText, true);
-        if (is_array($decodedAdvice['advice'] ?? null)) {
-            foreach (array_slice($decodedAdvice['advice'], 0, 5) as $item) {
-                $type = in_array($item['type'] ?? '', ['success', 'info', 'warning', 'danger'], true) ? (string)$item['type'] : 'info';
-                $title = trim((string)($item['title'] ?? ''));
-                $body = trim((string)($item['body'] ?? ''));
-                if ($title !== '' && $body !== '') {
-                    $annualAdvice[] = ['type' => $type, 'title' => $title, 'body' => $body];
+            $decodedAdvice = json_decode($outputText, true);
+            if (is_array($decodedAdvice['advice'] ?? null)) {
+                foreach (array_slice($decodedAdvice['advice'], 0, 5) as $item) {
+                    $type = in_array($item['type'] ?? '', ['success', 'info', 'warning', 'danger'], true) ? (string)$item['type'] : 'info';
+                    $title = trim((string)($item['title'] ?? ''));
+                    $body = trim((string)($item['body'] ?? ''));
+                    if ($title !== '' && $body !== '') {
+                        $annualAdvice[] = ['type' => $type, 'title' => $title, 'body' => $body];
+                    }
                 }
             }
-        }
 
-        if (!$annualAdvice) {
-            $annualAdviceError = 'AI分析の結果を読み取れませんでした。時間をおいて再度お試しください。';
+            if (!$annualAdvice) {
+                $annualAdviceError = 'AI分析の結果を読み取れませんでした。時間をおいて再度お試しください。';
+            }
         }
     }
+
 }
 
 $yenClass = static fn(int $amount): string => $amount < 0 ? 'amount-negative' : 'amount-positive';
@@ -391,6 +396,7 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 
+<?php if ($showAnnualAiAdvice): ?>
 <section class="card annual-ai-advice-card">
   <div class="card-title-row">
     <div>
@@ -413,6 +419,8 @@ include __DIR__ . '/includes/header.php';
   <?php endif; ?>
   <p class="description">※ OpenAI APIを使って表示時点の入力データを分析します。経営・税務上の最終判断は専門家へご相談ください。</p>
 </section>
+
+<?php endif; ?>
 
 <section class="card">
   <h3>月別集計</h3>
