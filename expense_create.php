@@ -171,8 +171,12 @@ include __DIR__ . '/includes/header.php';
       </select>
     </label>
 
-    <label>領収書写真
-      <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp">
+    <label class="file-upload-field">領収書写真
+      <span class="file-upload-box">
+        <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp">
+        <span class="file-upload-button">画像を選択する</span>
+        <span class="file-upload-note">クリックして領収書写真をアップロード</span>
+      </span>
       <span class="description">任意項目です。JPG / JPEG / PNG / WEBP、最大3MBまでアップロードできます。</span>
     </label>
 
