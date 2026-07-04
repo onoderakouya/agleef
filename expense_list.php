@@ -327,8 +327,8 @@ include __DIR__ . '/includes/header.php';
         <?php else: ?>
           <?php foreach ($expenses as $row): ?>
             <tr>
-              <td data-label="選択"><label class="table-check-label"><input type="checkbox" name="expense_ids[]" value="<?= e((string)((int)$row['id'])) ?>" form="bulk-edit-form" data-bulk-expense-checkbox aria-label="<?= e($row['expense_date'] . ' の経費を選択') ?>"></label></td>
-              <td data-label="支払日"><?= e($row['expense_date']) ?></td>
+              <td data-label="選択"><label class="table-check-label"><input type="checkbox" name="expense_ids[]" value="<?= e((string)((int)$row['id'])) ?>" form="bulk-edit-form" data-bulk-expense-checkbox aria-label="<?= e(format_date_with_weekday($row['expense_date']) . ' の経費を選択') ?>"></label></td>
+              <td data-label="支払日"><?= e(format_date_with_weekday($row['expense_date'])) ?></td>
               <td data-label="カテゴリ"><?= e($row['category_name'] ?? '未分類') ?></td>
               <td data-label="作物"><?= e($row['crop_name'] ?? '-') ?></td>
               <td data-label="圃場"><?= e($row['field_name'] ?? '-') ?></td>
