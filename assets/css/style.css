@@ -1645,3 +1645,70 @@ body.has-photo-modal {
 .ai-advice-error {
   margin: 16px 0;
 }
+
+.bulk-edit-form {
+  margin: 18px 0;
+}
+
+.bulk-edit-panel {
+  border: 1px solid #bdd7c8;
+  border-radius: 14px;
+  padding: 18px;
+  background: linear-gradient(135deg, #f8fcf9 0%, #eef8f1 100%);
+}
+
+.bulk-edit-header h3 {
+  margin: 0 0 6px;
+}
+
+.bulk-edit-header p {
+  margin: 0 0 14px;
+  color: #486054;
+}
+
+.bulk-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.bulk-edit-field {
+  margin: 0;
+}
+
+.bulk-edit-field select,
+.bulk-edit-field input[type="text"] {
+  margin-top: 8px;
+}
+
+.bulk-edit-actions {
+  align-items: center;
+  margin-top: 16px;
+}
+
+.bulk-selected-count {
+  color: #486054;
+  font-weight: 700;
+}
+
+.table-check-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+}
+
+.table-check-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .bulk-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-edit-actions .btn {
+    width: 100%;
+  }
+}
