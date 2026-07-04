@@ -116,7 +116,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="card narrow">
   <h2>経費登録</h2>
-  <form method="post" class="stack" enctype="multipart/form-data">
+  <form method="post" class="stack expense-form" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
 
     <label>支払日 <span aria-hidden="true">*</span>
@@ -172,13 +172,18 @@ include __DIR__ . '/includes/header.php';
     </label>
 
     <label class="file-upload-field">領収書写真
-      <span class="file-upload-box">
-        <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp">
-        <span class="file-upload-button">画像を選択する</span>
-        <span class="file-upload-note">クリックして領収書写真をアップロード</span>
+      <span class="file-upload-box" data-expense-receipt-box>
+        <input type="file" name="receipt" accept="image/jpeg,image/png,image/webp" data-expense-receipt-input>
+        <span class="file-upload-button" data-expense-receipt-button>画像を選択する</span>
+        <span class="file-upload-note" data-expense-receipt-note aria-live="polite">クリックして領収書写真をアップロード</span>
       </span>
       <span class="description">任意項目です。JPG / JPEG / PNG / WEBP、最大3MBまでアップロードできます。</span>
     </label>
+    <div class="file-upload-preview" data-expense-receipt-preview hidden aria-live="polite">
+      <span class="file-upload-preview-badge">アップロード予定</span>
+      <img class="file-upload-preview-image" data-expense-receipt-preview-image src="" alt="選択した領収書写真のプレビュー">
+      <span class="file-upload-preview-name" data-expense-receipt-preview-name></span>
+    </div>
 
     <label>メモ
       <textarea name="memo" rows="4" placeholder="申告や見返し用の補足メモ"><?= e($memo) ?></textarea>
@@ -190,4 +195,42 @@ include __DIR__ . '/includes/header.php';
     </div>
   </form>
 </section>
+<script>
+(function(){
+  var form = document.querySelector('.expense-form');
+  if (!form) return;
+
+  var fileInput = form.querySelector('[data-expense-receipt-input]');
+  var fileBox = form.querySelector('[data-expense-receipt-box]');
+  var fileButton = form.querySelector('[data-expense-receipt-button]');
+  var fileNote = form.querySelector('[data-expense-receipt-note]');
+  var preview = form.querySelector('[data-expense-receipt-preview]');
+  var previewImage = form.querySelector('[data-expense-receipt-preview-image]');
+  var previewName = form.querySelector('[data-expense-receipt-preview-name]');
+
+  if (!fileInput || !fileBox || !fileButton || !fileNote || !preview || !previewImage || !previewName) return;
+
+  fileInput.addEventListener('change', updateExpenseReceiptUploadState);
+  updateExpenseReceiptUploadState();
+
+  function updateExpenseReceiptUploadState() {
+    var file = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+    var hasFile = file !== null;
+    fileBox.classList.toggle('has-file', hasFile);
+    fileButton.textContent = hasFile ? '画像を選択済み' : '画像を選択する';
+    fileNote.textContent = hasFile ? '選択済みです。下にプレビューを表示しています。' : 'クリックして領収書写真をアップロード';
+    preview.hidden = !hasFile;
+    previewName.textContent = hasFile ? file.name : '';
+
+    if (!hasFile) {
+      previewImage.removeAttribute('src');
+      return;
+    }
+
+    if (file.type && file.type.indexOf('image/') === 0) {
+      previewImage.src = URL.createObjectURL(file);
+    }
+  }
+})();
+</script>
 <?php include __DIR__ . '/includes/footer.php'; ?>
