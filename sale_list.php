@@ -113,6 +113,27 @@ if ($totalGross > 0) {
 }
 $channelChartStyle = $channelChartSegments ? 'background: conic-gradient(' . implode(', ', $channelChartSegments) . ');' : '';
 
+$weekdayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+$weekdayTotals = array_map(static fn(string $label): array => [
+    'label' => $label,
+    'amount' => 0,
+    'percentage' => 0,
+], $weekdayLabels);
+$weekdayStmt = db()->prepare("SELECT CAST(strftime('%w', s.sale_date) AS INTEGER) AS weekday_num, COALESCE(SUM(gross_amount), 0) AS total_amount FROM sales s WHERE {$whereSql} GROUP BY weekday_num");
+$weekdayStmt->execute($params);
+foreach ($weekdayStmt->fetchAll() as $row) {
+    $weekdayNum = (int)$row['weekday_num'];
+    if (isset($weekdayTotals[$weekdayNum])) {
+        $weekdayTotals[$weekdayNum]['amount'] = (int)$row['total_amount'];
+    }
+}
+$weekdayMaxTotal = max(array_column($weekdayTotals, 'amount'));
+if ($weekdayMaxTotal > 0) {
+    foreach ($weekdayTotals as $index => $weekdayTotal) {
+        $weekdayTotals[$index]['percentage'] = max(3, (int)round($weekdayTotal['amount'] / $weekdayMaxTotal * 100));
+    }
+}
+
 $hasSearchCondition = $dateFrom !== '' || $dateTo !== '' || $salesChannel !== '' || $cropId !== '' || $fieldId !== '' || $paymentStatus !== '' || $keyword !== '';
 $pageTitle = '売上一覧 | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
@@ -148,6 +169,26 @@ include __DIR__ . '/includes/header.php';
   </form>
 
   <?php if ($hasSearchCondition): ?><p class="alert success">条件に一致する売上を表示しています。</p><?php endif; ?>
+
+  <?php if ($weekdayMaxTotal > 0): ?>
+    <div class="category-summary weekday-sales-summary">
+      <div class="category-summary-header">
+        <h3>曜日別売上（表示条件内）</h3>
+        <p>表示中の売上総額を曜日別に集計し、売上が多い曜日を棒グラフで確認できます。</p>
+      </div>
+      <div class="weekday-bar-chart" role="img" aria-label="曜日別売上の棒グラフ">
+        <?php foreach ($weekdayTotals as $weekdayTotal): ?>
+          <div class="weekday-bar-item">
+            <div class="weekday-bar-track">
+              <span class="weekday-bar" style="height: <?= e((string)$weekdayTotal['percentage']) ?>%"></span>
+            </div>
+            <strong><?= e($weekdayTotal['label']) ?></strong>
+            <span><?= e(format_yen((int)$weekdayTotal['amount'])) ?></span>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  <?php endif; ?>
 
   <?php if ($channelTotals): ?>
     <div class="category-summary">
