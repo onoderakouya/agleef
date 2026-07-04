@@ -335,6 +335,12 @@ include __DIR__ . '/includes/header.php';
   if (!form || !countLabel) return;
 
   function updateCount() {
+    checkboxes.forEach(function(checkbox){
+      var row = checkbox.closest ? checkbox.closest('tr') : null;
+      if (row) {
+        row.classList.toggle('is-selected', checkbox.checked);
+      }
+    });
     var selectedCount = checkboxes.filter(function(checkbox){ return checkbox.checked; }).length;
     countLabel.textContent = selectedCount + '件選択中';
     if (selectAll) {
