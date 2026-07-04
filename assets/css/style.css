@@ -450,6 +450,26 @@ button,
 
 .table-wrap { overflow-x: auto; }
 
+.floating-table-scrollbar {
+  display: none;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  height: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba(246, 249, 245, 0.94);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -2px 8px rgba(34, 73, 49, 0.08);
+}
+
+.floating-table-scrollbar.is-visible { display: block; }
+
+.floating-table-scrollbar > div {
+  height: 1px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

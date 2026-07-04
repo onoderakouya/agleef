@@ -315,7 +315,7 @@ include __DIR__ . '/includes/header.php';
     </div>
   <?php endif; ?>
 
-  <div class="table-wrap"><table class="sale-table"><thead><tr><th><label class="table-check-label"><input type="checkbox" data-bulk-select-all aria-label="売上をすべて選択"></label></th><th>売上日</th><th>販売経路</th><th>作物</th><th>圃場</th><th>販売先</th><th>品目</th><th>数量</th><th>売上総額</th><th>手数料</th><th>送料</th><th>差引入金額</th><th>入金状況</th><th>明細</th><th>操作</th></tr></thead><tbody>
+  <div class="table-wrap sale-table-wrap" data-sale-table-wrap><table class="sale-table"><thead><tr><th><label class="table-check-label"><input type="checkbox" data-bulk-select-all aria-label="売上をすべて選択"></label></th><th>売上日</th><th>販売経路</th><th>作物</th><th>圃場</th><th>販売先</th><th>品目</th><th>数量</th><th>売上総額</th><th>手数料</th><th>送料</th><th>差引入金額</th><th>入金状況</th><th>明細</th><th>操作</th></tr></thead><tbody>
     <?php if (!$sales): ?><tr><td colspan="15"><?= e((string)($hasSearchCondition ? '条件に一致する売上はありません。' : '売上がまだありません。')) ?></td></tr><?php else: ?>
       <?php foreach ($sales as $row): ?>
         <tr>
@@ -326,8 +326,37 @@ include __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
     <?php endif; ?>
   </tbody></table></div>
+  <div class="floating-table-scrollbar" data-sale-floating-scrollbar aria-hidden="true"><div data-sale-floating-scrollbar-content></div></div>
 <script>
 (function(){
+  var tableWrap = document.querySelector('[data-sale-table-wrap]');
+  var floatingScrollbar = document.querySelector('[data-sale-floating-scrollbar]');
+  var floatingScrollbarContent = document.querySelector('[data-sale-floating-scrollbar-content]');
+
+  function syncFloatingScrollbarLayout() {
+    if (!tableWrap || !floatingScrollbar || !floatingScrollbarContent) return;
+    var wrapRect = tableWrap.getBoundingClientRect();
+    var hasHorizontalOverflow = tableWrap.scrollWidth > tableWrap.clientWidth + 1;
+    var useFloatingScrollbar = hasHorizontalOverflow && window.matchMedia('(min-width: 768px)').matches;
+    floatingScrollbar.classList.toggle('is-visible', useFloatingScrollbar);
+    if (!useFloatingScrollbar) return;
+    floatingScrollbar.style.left = Math.max(wrapRect.left, 0) + 'px';
+    floatingScrollbar.style.width = Math.min(wrapRect.width, window.innerWidth) + 'px';
+    floatingScrollbarContent.style.width = tableWrap.scrollWidth + 'px';
+    floatingScrollbar.scrollLeft = tableWrap.scrollLeft;
+  }
+
+  if (tableWrap && floatingScrollbar) {
+    tableWrap.addEventListener('scroll', function(){ floatingScrollbar.scrollLeft = tableWrap.scrollLeft; });
+    floatingScrollbar.addEventListener('scroll', function(){ tableWrap.scrollLeft = floatingScrollbar.scrollLeft; });
+    window.addEventListener('resize', syncFloatingScrollbarLayout);
+    window.addEventListener('scroll', syncFloatingScrollbarLayout, { passive: true });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(syncFloatingScrollbarLayout);
+    }
+    syncFloatingScrollbarLayout();
+  }
+
   var form = document.querySelector('[data-bulk-edit-form]');
   var selectAll = document.querySelector('[data-bulk-select-all]');
   var checkboxes = Array.prototype.slice.call(document.querySelectorAll('[data-bulk-sale-checkbox]'));
@@ -368,6 +397,7 @@ include __DIR__ . '/includes/header.php';
     }
   });
   updateCount();
+  syncFloatingScrollbarLayout();
 })();
 </script>
 </section>
