@@ -117,6 +117,7 @@ if ($total > 0) {
 }
 $categoryChartStyle = $categoryChartSegments ? 'background: conic-gradient(' . implode(', ', $categoryChartSegments) . ');' : '';
 
+$monthFilterLinks = month_filter_links('expense_list.php', $dateFrom, $dateTo);
 $hasSearchCondition = $dateFrom !== '' || $dateTo !== '' || $categoryId !== '' || $cropId !== '' || $fieldId !== '' || $keyword !== '';
 
 $pageTitle = '経費一覧 | ' . APP_NAME;
@@ -141,6 +142,11 @@ include __DIR__ . '/includes/header.php';
 
   <form class="search-form" method="get" action="expense_list.php">
     <h3>絞り込み</h3>
+    <div class="month-filter" aria-label="月別の期間絞り込み">
+      <?php foreach ($monthFilterLinks as $monthFilterLink): ?>
+        <a class="btn small<?= e((string)($monthFilterLink['is_active'] ? ' primary' : '')) ?>" href="<?= e($monthFilterLink['url']) ?>"><?= e($monthFilterLink['label']) ?></a>
+      <?php endforeach; ?>
+    </div>
     <div class="filter-grid">
       <label>開始日<input type="date" name="date_from" value="<?= e($dateFrom) ?>"></label>
       <label>終了日<input type="date" name="date_to" value="<?= e($dateTo) ?>"></label>

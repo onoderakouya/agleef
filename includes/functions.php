@@ -148,6 +148,47 @@ function is_valid_date(string $value): bool
     return $date instanceof DateTime && $date->format('Y-m-d') === $value;
 }
 
+
+function month_filter_links(string $basePath, string $activeDateFrom = '', string $activeDateTo = '', ?int $year = null): array
+{
+    if ($year === null) {
+        if ($activeDateFrom !== '' && is_valid_date($activeDateFrom)) {
+            $year = (int)substr($activeDateFrom, 0, 4);
+        } elseif ($activeDateTo !== '' && is_valid_date($activeDateTo)) {
+            $year = (int)substr($activeDateTo, 0, 4);
+        } else {
+            $year = (int)date('Y');
+        }
+    }
+
+    $baseQuery = [];
+    foreach ($_GET as $key => $value) {
+        if ($key === 'date_from' || $key === 'date_to' || is_array($value)) {
+            continue;
+        }
+
+        $baseQuery[$key] = (string)$value;
+    }
+
+    $links = [];
+    for ($month = 1; $month <= 12; $month++) {
+        $start = sprintf('%04d-%02d-01', $year, $month);
+        $end = (new DateTimeImmutable($start))->format('Y-m-t');
+        $query = array_merge($baseQuery, [
+            'date_from' => $start,
+            'date_to' => $end,
+        ]);
+
+        $links[] = [
+            'label' => $month . '月',
+            'url' => $basePath . '?' . http_build_query($query),
+            'is_active' => $activeDateFrom === $start && $activeDateTo === $end,
+        ];
+    }
+
+    return $links;
+}
+
 function format_date_with_weekday(string $value): string
 {
     $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
