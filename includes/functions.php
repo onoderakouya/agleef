@@ -420,7 +420,7 @@ function save_sale_document(array $file, int $userId): ?string
 
 function sales_channel_options(): array
 {
-    return ['JA出荷', '直売所', '個人販売', '飲食店・業者販売', 'マルシェ', 'ネット販売', 'その他'];
+    return ['JA出荷', '直売所', '道の駅', '個人販売', '飲食店・業者販売', 'マルシェ', 'ネット販売', 'その他'];
 }
 
 function payment_status_options(): array
