@@ -17,6 +17,75 @@ $fieldId = get_query_param('field_id');
 $paymentStatus = get_query_param('payment_status');
 $keyword = trim(get_query_param('keyword'));
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'bulk_update') {
+    $bulkErrors = [];
+    $selectedIds = [];
+    foreach (($_POST['sale_ids'] ?? []) as $rawId) {
+        if (is_scalar($rawId)) {
+            $selectedIds[] = (int)$rawId;
+        }
+    }
+    $selectedIds = array_values(array_unique(array_filter($selectedIds, static fn(int $value): bool => $value > 0)));
+
+    $applySalesChannel = isset($_POST['apply_sales_channel']);
+    $applyBuyer = isset($_POST['apply_buyer']);
+    $applyProductName = isset($_POST['apply_product_name']);
+    $bulkSalesChannel = (string)($_POST['bulk_sales_channel'] ?? '');
+    $bulkBuyer = trim((string)($_POST['bulk_buyer'] ?? ''));
+    $bulkProductName = trim((string)($_POST['bulk_product_name'] ?? ''));
+
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        $bulkErrors[] = '不正なリクエストです。';
+    }
+    if (!$selectedIds) {
+        $bulkErrors[] = '一括編集する売上を選択してください。';
+    }
+    if (!$applySalesChannel && !$applyBuyer && !$applyProductName) {
+        $bulkErrors[] = '一括編集する項目を選択してください。';
+    }
+    if ($applySalesChannel && $bulkSalesChannel !== '' && !in_array($bulkSalesChannel, $channels, true)) {
+        $bulkErrors[] = '販売経路の指定が不正です。';
+    }
+    if ($applyProductName && $bulkProductName === '') {
+        $bulkErrors[] = '品目を一括編集する場合は品目を入力してください。';
+    }
+
+    if ($bulkErrors) {
+        set_flash('error', implode(' ', $bulkErrors));
+    } else {
+        $placeholders = [];
+        $bulkParams = [':user_id' => $userId];
+        foreach ($selectedIds as $index => $selectedId) {
+            $placeholder = ':id' . $index;
+            $placeholders[] = $placeholder;
+            $bulkParams[$placeholder] = $selectedId;
+        }
+
+        $setParts = [];
+        if ($applySalesChannel) {
+            $setParts[] = 'sales_channel = :bulk_sales_channel';
+            $bulkParams[':bulk_sales_channel'] = $bulkSalesChannel !== '' ? $bulkSalesChannel : null;
+        }
+        if ($applyBuyer) {
+            $setParts[] = 'buyer = :bulk_buyer';
+            $bulkParams[':bulk_buyer'] = $bulkBuyer !== '' ? $bulkBuyer : null;
+        }
+        if ($applyProductName) {
+            $setParts[] = 'product_name = :bulk_product_name';
+            $bulkParams[':bulk_product_name'] = $bulkProductName;
+        }
+        $setParts[] = 'updated_at = CURRENT_TIMESTAMP';
+
+        $bulkUpdate = db()->prepare('UPDATE sales SET ' . implode(', ', $setParts) . ' WHERE user_id = :user_id AND id IN (' . implode(', ', $placeholders) . ')');
+        $bulkUpdate->execute($bulkParams);
+        set_flash('success', (string)$bulkUpdate->rowCount() . '件の売上を一括更新しました。');
+    }
+
+    $redirectQuery = $_GET ? '?' . http_build_query($_GET) : '';
+    redirect('sale_list.php' . $redirectQuery);
+}
+
 $where = ['s.user_id = :user_id'];
 $params = [':user_id' => $userId];
 
@@ -176,6 +245,23 @@ include __DIR__ . '/includes/header.php';
 
   <?php if ($hasSearchCondition): ?><p class="alert success">条件に一致する売上を表示しています。</p><?php endif; ?>
 
+  <form id="bulk-edit-form" class="bulk-edit-form" method="post" action="sale_list.php<?= e((string)($_SERVER['QUERY_STRING'] ?? '') !== '' ? '?' . ($_SERVER['QUERY_STRING'] ?? '') : '') ?>" data-bulk-edit-form>
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="bulk_update">
+    <div class="bulk-edit-panel">
+      <div class="bulk-edit-header">
+        <h3>選択した売上を一括編集</h3>
+        <p>一覧のチェックを付けた売上だけ、「販売経路」「販売先」「品目」をまとめて更新できます。</p>
+      </div>
+      <div class="bulk-edit-grid">
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_sales_channel" value="1"> 販売経路を変更</span><select name="bulk_sales_channel"><option value="">選択しない（空にする）</option><?php foreach ($channels as $channel): ?><option value="<?= e($channel) ?>"><?= e($channel) ?></option><?php endforeach; ?></select></label>
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_buyer" value="1"> 販売先を変更</span><input type="text" name="bulk_buyer" placeholder="空欄で販売先を空にする"></label>
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_product_name" value="1"> 品目を変更</span><input type="text" name="bulk_product_name" placeholder="例：トマト"></label>
+      </div>
+      <div class="button-row bulk-edit-actions"><button class="btn primary" type="submit">選択した売上を一括更新</button><span class="bulk-selected-count" data-bulk-selected-count>0件選択中</span></div>
+    </div>
+  </form>
+
   <?php if ($weekdayMaxTotal > 0): ?>
     <div class="category-summary weekday-sales-summary">
       <div class="category-summary-header">
@@ -229,15 +315,60 @@ include __DIR__ . '/includes/header.php';
     </div>
   <?php endif; ?>
 
-  <div class="table-wrap"><table class="sale-table"><thead><tr><th>売上日</th><th>販売経路</th><th>作物</th><th>圃場</th><th>販売先</th><th>品目</th><th>数量</th><th>売上総額</th><th>手数料</th><th>送料</th><th>差引入金額</th><th>入金状況</th><th>明細</th><th>操作</th></tr></thead><tbody>
-    <?php if (!$sales): ?><tr><td colspan="14"><?= e((string)($hasSearchCondition ? '条件に一致する売上はありません。' : '売上がまだありません。')) ?></td></tr><?php else: ?>
+  <div class="table-wrap"><table class="sale-table"><thead><tr><th><label class="table-check-label"><input type="checkbox" data-bulk-select-all aria-label="売上をすべて選択"></label></th><th>売上日</th><th>販売経路</th><th>作物</th><th>圃場</th><th>販売先</th><th>品目</th><th>数量</th><th>売上総額</th><th>手数料</th><th>送料</th><th>差引入金額</th><th>入金状況</th><th>明細</th><th>操作</th></tr></thead><tbody>
+    <?php if (!$sales): ?><tr><td colspan="15"><?= e((string)($hasSearchCondition ? '条件に一致する売上はありません。' : '売上がまだありません。')) ?></td></tr><?php else: ?>
       <?php foreach ($sales as $row): ?>
         <tr>
+          <td data-label="選択"><label class="table-check-label"><input type="checkbox" name="sale_ids[]" value="<?= e((string)((int)$row['id'])) ?>" form="bulk-edit-form" data-bulk-sale-checkbox aria-label="<?= e(format_date_with_weekday($row['sale_date']) . ' の売上を選択') ?>"></label></td>
           <td data-label="売上日"><?= e(format_date_with_weekday($row['sale_date'])) ?></td><td data-label="販売経路"><?= e($row['sales_channel'] ?? '-') ?></td><td data-label="作物"><?= e($row['crop_name'] ?? '-') ?></td><td data-label="圃場"><?= e($row['field_name'] ?? '-') ?></td><td data-label="販売先"><?= e($row['buyer'] ?? '-') ?></td><td data-label="品目"><span class="cell-note"><?= e($row['product_name']) ?></span></td><td data-label="数量"><?= e((string)($row['quantity'] !== null && $row['quantity'] !== '' ? format_quantity((float)$row['quantity']) . ($row['unit'] ? ' ' . $row['unit'] : '') : '-')) ?></td><td data-label="売上総額"><strong><?= e(format_yen((int)$row['gross_amount'])) ?></strong></td><td data-label="手数料"><?= e(format_yen((int)$row['fee_amount'])) ?></td><td data-label="送料"><?= e(format_yen((int)$row['shipping_amount'])) ?></td><td data-label="差引入金額"><strong><?= e(format_yen((int)$row['net_amount'])) ?></strong></td><td data-label="入金状況"><?= e($row['payment_status'] ?? '未入金') ?></td><td data-label="明細"><?= e((string)(!empty($row['document_path']) ? 'あり' : 'なし')) ?></td>
           <td data-label="操作" class="actions-cell"><div class="inline-actions"><a class="btn small" href="sale_detail.php?id=<?= e((string)((int)$row['id'])) ?>">詳細</a><a class="btn small" href="sale_edit.php?id=<?= e((string)((int)$row['id'])) ?>">編集</a><form method="post" action="sale_delete.php" onsubmit="return confirm('この売上を削除しますか？');"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="id" value="<?= e((string)((int)$row['id'])) ?>"><button class="btn small danger" type="submit">削除</button></form></div></td>
         </tr>
       <?php endforeach; ?>
     <?php endif; ?>
   </tbody></table></div>
+<script>
+(function(){
+  var form = document.querySelector('[data-bulk-edit-form]');
+  var selectAll = document.querySelector('[data-bulk-select-all]');
+  var checkboxes = Array.prototype.slice.call(document.querySelectorAll('[data-bulk-sale-checkbox]'));
+  var countLabel = document.querySelector('[data-bulk-selected-count]');
+  if (!form || !countLabel) return;
+
+  function updateCount() {
+    checkboxes.forEach(function(checkbox){
+      var row = checkbox.closest ? checkbox.closest('tr') : null;
+      if (row) {
+        row.classList.toggle('is-selected', checkbox.checked);
+      }
+    });
+    var selectedCount = checkboxes.filter(function(checkbox){ return checkbox.checked; }).length;
+    countLabel.textContent = selectedCount + '件選択中';
+    if (selectAll) {
+      selectAll.checked = checkboxes.length > 0 && selectedCount === checkboxes.length;
+      selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function(){
+      checkboxes.forEach(function(checkbox){ checkbox.checked = selectAll.checked; });
+      updateCount();
+    });
+  }
+  checkboxes.forEach(function(checkbox){ checkbox.addEventListener('change', updateCount); });
+  form.addEventListener('submit', function(event){
+    var selectedCount = checkboxes.filter(function(checkbox){ return checkbox.checked; }).length;
+    if (selectedCount === 0) {
+      event.preventDefault();
+      alert('一括編集する売上を選択してください。');
+      return;
+    }
+    if (!confirm(selectedCount + '件の売上を一括更新しますか？')) {
+      event.preventDefault();
+    }
+  });
+  updateCount();
+})();
+</script>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
