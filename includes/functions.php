@@ -148,6 +148,17 @@ function is_valid_date(string $value): bool
     return $date instanceof DateTime && $date->format('Y-m-d') === $value;
 }
 
+function format_date_with_weekday(string $value): string
+{
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+    if (!$date instanceof DateTimeImmutable || $date->format('Y-m-d') !== $value) {
+        return $value;
+    }
+
+    $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+    return $date->format('Y-m-d') . '（' . $weekdays[(int)$date->format('w')] . '）';
+}
+
 function get_user_crops(int $userId): array
 {
     $stmt = db()->prepare('SELECT id, name FROM crops WHERE user_id = :user_id ORDER BY name ASC');
