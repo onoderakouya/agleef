@@ -963,22 +963,25 @@ input[type="number"] {
   overflow-wrap: anywhere;
 }
 
+
 .expense-table th:nth-child(1),
-.expense-table td:nth-child(1) { width: 108px; }
+.expense-table td:nth-child(1) { width: 54px; }
 .expense-table th:nth-child(2),
-.expense-table td:nth-child(2),
+.expense-table td:nth-child(2) { width: 108px; }
 .expense-table th:nth-child(3),
 .expense-table td:nth-child(3),
 .expense-table th:nth-child(4),
 .expense-table td:nth-child(4),
-.expense-table th:nth-child(8),
-.expense-table td:nth-child(8),
+.expense-table th:nth-child(5),
+.expense-table td:nth-child(5),
 .expense-table th:nth-child(9),
-.expense-table td:nth-child(9) { width: 100px; }
-.expense-table th:nth-child(7),
-.expense-table td:nth-child(7) { width: 120px; }
+.expense-table td:nth-child(9),
 .expense-table th:nth-child(10),
-.expense-table td:nth-child(10) { width: 190px; }
+.expense-table td:nth-child(10) { width: 100px; }
+.expense-table th:nth-child(8),
+.expense-table td:nth-child(8) { width: 120px; }
+.expense-table th:nth-child(11),
+.expense-table td:nth-child(11) { width: 190px; }
 
 button:disabled,
 .btn:disabled {
@@ -1823,7 +1826,8 @@ body.has-photo-modal {
   border-radius: 8px;
 }
 
-.sale-table tbody tr.is-selected {
+.sale-table tbody tr.is-selected,
+.expense-table tbody tr.is-selected {
   background: #f1faf4;
   box-shadow: inset 4px 0 0 #2f855a;
 }
