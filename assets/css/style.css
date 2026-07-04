@@ -343,6 +343,45 @@ input[type="file"] {
   font-weight: 600;
 }
 
+.file-upload-preview {
+  display: grid;
+  gap: 8px;
+  margin-top: -6px;
+  padding: 12px;
+  border: 1px solid rgba(47, 133, 90, 0.28);
+  border-radius: 14px;
+  background: #f2fbf5;
+}
+
+.file-upload-preview[hidden] {
+  display: none;
+}
+
+.file-upload-preview-badge {
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2f855a;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.file-upload-preview-image {
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid rgba(47, 133, 90, 0.18);
+}
+
+.file-upload-preview-name {
+  color: #1f6f46;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 560px) {
   .file-upload-box {
     align-items: stretch;

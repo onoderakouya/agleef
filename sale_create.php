@@ -137,33 +137,56 @@ include __DIR__ . '/includes/header.php';
     <div class="form-grid-3"><label>手数料<input type="number" name="fee_amount" value="<?= e($feeAmount) ?>" min="0" step="1" inputmode="numeric"></label><label>送料<input type="number" name="shipping_amount" value="<?= e($shippingAmount) ?>" min="0" step="1" inputmode="numeric"></label><label>差引入金額<input type="number" name="net_amount" value="<?= e($netAmount) ?>" min="0" step="1" inputmode="numeric"></label></div>
     <label>入金状況<select name="payment_status"><?php foreach ($paymentStatuses as $status): ?><option value="<?= e($status) ?>" <?= e((string)($paymentStatus === $status ? 'selected' : '')) ?>><?= e($status) ?></option><?php endforeach; ?></select></label>
     <label>入金日<input type="date" name="payment_date" value="<?= e($paymentDate) ?>"></label>
-    <label class="file-upload-field">売上明細・伝票写真<span class="file-upload-box" data-file-upload-box><input type="file" name="document" accept="image/jpeg,image/png,image/webp"><span class="file-upload-button" data-file-upload-button>画像を選択する</span><span class="file-upload-note" data-file-upload-note aria-live="polite">クリックして明細写真をアップロード</span></span><span class="description">JPG / JPEG / PNG / WEBP、最大3MB。</span></label>
+    <label class="file-upload-field">売上明細・伝票写真<span class="file-upload-box" data-file-upload-box><input type="file" name="document" accept="image/jpeg,image/png,image/webp" data-sale-document-input><span class="file-upload-button" data-file-upload-button>画像を選択する</span><span class="file-upload-note" data-file-upload-note aria-live="polite">クリックして明細写真をアップロード</span></span><span class="description">JPG / JPEG / PNG / WEBP、最大3MB。</span></label>
+    <div class="file-upload-preview" data-sale-document-preview hidden aria-live="polite">
+      <span class="file-upload-preview-badge">アップロード予定</span>
+      <img class="file-upload-preview-image" data-sale-document-preview-image src="" alt="選択した売上明細・伝票写真のプレビュー">
+      <span class="file-upload-preview-name" data-sale-document-preview-name></span>
+    </div>
     <label>メモ<textarea name="memo" rows="4"><?= e($memo) ?></textarea></label>
     <div class="button-row"><button class="primary" type="submit">登録する</button><a class="btn" href="sale_list.php">一覧へ戻る</a></div>
   </form>
 </section>
 <script>
 (function(){
-  const form = document.querySelector('.sale-form'); if (!form) return;
-  const q=form.quantity, u=form.unit_price, g=form.gross_amount, f=form.fee_amount, s=form.shipping_amount, n=form.net_amount;
-  let grossTouched=false, netTouched=false;
-  g.addEventListener('input',()=>{grossTouched=true; calcNet();}); n.addEventListener('input',()=>{netTouched=true;});
+  var form = document.querySelector('.sale-form'); if (!form) return;
+  var q=form.quantity, u=form.unit_price, g=form.gross_amount, f=form.fee_amount, s=form.shipping_amount, n=form.net_amount;
+  var grossTouched=false, netTouched=false;
+  g.addEventListener('input',function(){grossTouched=true; calcNet();}); n.addEventListener('input',function(){netTouched=true;});
   function num(el){return parseFloat(el.value || '0') || 0;}
   function calcGross(){ if(!grossTouched && q.value !== '' && u.value !== '') { g.value = Math.round(num(q)*num(u)); calcNet(); } }
   function calcNet(){ if(!netTouched && g.value !== '') n.value = Math.max(0, Math.round(num(g)-num(f)-num(s))); }
-  [q,u].forEach(el=>el.addEventListener('input',calcGross)); [f,s].forEach(el=>el.addEventListener('input',calcNet));
+  [q,u].forEach(function(el){el.addEventListener('input',calcGross);}); [f,s].forEach(function(el){el.addEventListener('input',calcNet);});
 
-  const fileInput = form.querySelector('input[type="file"][name="document"]');
-  const fileBox = form.querySelector('[data-file-upload-box]');
-  const fileButton = form.querySelector('[data-file-upload-button]');
-  const fileNote = form.querySelector('[data-file-upload-note]');
-  if (fileInput && fileBox && fileButton && fileNote) {
-    fileInput.addEventListener('change', () => {
-      const fileName = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0].name : '';
-      fileBox.classList.toggle('has-file', fileName !== '');
-      fileButton.textContent = fileName !== '' ? '画像を選択済み' : '画像を選択する';
-      fileNote.textContent = fileName !== '' ? `アップロード予定: ${fileName}` : 'クリックして明細写真をアップロード';
-    });
+  var fileInput = form.querySelector('[data-sale-document-input]');
+  var fileBox = form.querySelector('[data-file-upload-box]');
+  var fileButton = form.querySelector('[data-file-upload-button]');
+  var fileNote = form.querySelector('[data-file-upload-note]');
+  var preview = form.querySelector('[data-sale-document-preview]');
+  var previewImage = form.querySelector('[data-sale-document-preview-image]');
+  var previewName = form.querySelector('[data-sale-document-preview-name]');
+  if (fileInput && fileBox && fileButton && fileNote && preview && previewImage && previewName) {
+    fileInput.addEventListener('change', updateSaleDocumentUploadState);
+    updateSaleDocumentUploadState();
+  }
+
+  function updateSaleDocumentUploadState() {
+    var file = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+    var hasFile = file !== null;
+    fileBox.classList.toggle('has-file', hasFile);
+    fileButton.textContent = hasFile ? '画像を選択済み' : '画像を選択する';
+    fileNote.textContent = hasFile ? '選択済みです。下にプレビューを表示しています。' : 'クリックして明細写真をアップロード';
+    preview.hidden = !hasFile;
+    previewName.textContent = hasFile ? file.name : '';
+
+    if (!hasFile) {
+      previewImage.removeAttribute('src');
+      return;
+    }
+
+    if (file.type && file.type.indexOf('image/') === 0) {
+      previewImage.src = URL.createObjectURL(file);
+    }
   }
 })();
 </script>
