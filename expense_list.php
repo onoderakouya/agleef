@@ -8,6 +8,7 @@ ensure_default_expense_categories($userId);
 $categories = get_user_expense_categories($userId);
 $crops = get_user_crops($userId);
 $fields = get_user_fields($userId);
+$paymentMethods = ['現金', 'クレジットカード', '銀行振込', '口座振替', '電子マネー', 'その他'];
 
 $dateFrom = get_query_param('date_from');
 $dateTo = get_query_param('date_to');
@@ -16,6 +17,82 @@ $cropId = get_query_param('crop_id');
 $fieldId = get_query_param('field_id');
 $keyword = trim(get_query_param('keyword'));
 $errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'bulk_update') {
+    $bulkErrors = [];
+    $selectedIds = [];
+    foreach (($_POST['expense_ids'] ?? []) as $rawId) {
+        if (is_scalar($rawId)) {
+            $selectedIds[] = (int)$rawId;
+        }
+    }
+    $selectedIds = array_values(array_unique(array_filter($selectedIds, static fn(int $value): bool => $value > 0)));
+
+    $applyCategory = isset($_POST['apply_category']);
+    $applyPayee = isset($_POST['apply_payee']);
+    $applyPaymentMethod = isset($_POST['apply_payment_method']);
+    $bulkCategoryId = (string)($_POST['bulk_category_id'] ?? '');
+    $bulkPayee = trim((string)($_POST['bulk_payee'] ?? ''));
+    $bulkPaymentMethod = (string)($_POST['bulk_payment_method'] ?? '');
+
+    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        $bulkErrors[] = '不正なリクエストです。';
+    }
+    if (!$selectedIds) {
+        $bulkErrors[] = '一括編集する経費を選択してください。';
+    }
+    if (!$applyCategory && !$applyPayee && !$applyPaymentMethod) {
+        $bulkErrors[] = '一括編集する項目を選択してください。';
+    }
+    if ($applyCategory) {
+        if ($bulkCategoryId === '' || !ctype_digit($bulkCategoryId)) {
+            $bulkErrors[] = '経費カテゴリを選択してください。';
+        } else {
+            $categoryCheck = db()->prepare('SELECT COUNT(*) FROM expense_categories WHERE id = :id AND user_id = :user_id');
+            $categoryCheck->execute([':id' => (int)$bulkCategoryId, ':user_id' => $userId]);
+            if ((int)$categoryCheck->fetchColumn() === 0) {
+                $bulkErrors[] = '選択した経費カテゴリが不正です。';
+            }
+        }
+    }
+    if ($applyPaymentMethod && $bulkPaymentMethod !== '' && !in_array($bulkPaymentMethod, $paymentMethods, true)) {
+        $bulkErrors[] = '支払方法の指定が不正です。';
+    }
+
+    if ($bulkErrors) {
+        set_flash('error', implode(' ', $bulkErrors));
+    } else {
+        $placeholders = [];
+        $bulkParams = [':user_id' => $userId];
+        foreach ($selectedIds as $index => $selectedId) {
+            $placeholder = ':id' . $index;
+            $placeholders[] = $placeholder;
+            $bulkParams[$placeholder] = $selectedId;
+        }
+
+        $setParts = [];
+        if ($applyCategory) {
+            $setParts[] = 'category_id = :bulk_category_id';
+            $bulkParams[':bulk_category_id'] = (int)$bulkCategoryId;
+        }
+        if ($applyPayee) {
+            $setParts[] = 'payee = :bulk_payee';
+            $bulkParams[':bulk_payee'] = $bulkPayee !== '' ? $bulkPayee : null;
+        }
+        if ($applyPaymentMethod) {
+            $setParts[] = 'payment_method = :bulk_payment_method';
+            $bulkParams[':bulk_payment_method'] = $bulkPaymentMethod !== '' ? $bulkPaymentMethod : null;
+        }
+        $setParts[] = 'updated_at = CURRENT_TIMESTAMP';
+
+        $bulkUpdate = db()->prepare('UPDATE expenses SET ' . implode(', ', $setParts) . ' WHERE user_id = :user_id AND id IN (' . implode(', ', $placeholders) . ')');
+        $bulkUpdate->execute($bulkParams);
+        set_flash('success', (string)$bulkUpdate->rowCount() . '件の経費を一括更新しました。');
+    }
+
+    $redirectQuery = $_GET ? '?' . http_build_query($_GET) : '';
+    redirect('expense_list.php' . $redirectQuery);
+}
 
 $where = ['e.user_id = :user_id'];
 $params = [':user_id' => $userId];
@@ -187,6 +264,23 @@ include __DIR__ . '/includes/header.php';
     <p class="alert success">条件に一致する経費を表示しています。</p>
   <?php endif; ?>
 
+  <form id="bulk-edit-form" class="bulk-edit-form" method="post" action="expense_list.php<?= e((string)($_SERVER['QUERY_STRING'] ?? '') !== '' ? '?' . ($_SERVER['QUERY_STRING'] ?? '') : '') ?>" data-bulk-edit-form>
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="bulk_update">
+    <div class="bulk-edit-panel">
+      <div class="bulk-edit-header">
+        <h3>選択した経費を一括編集</h3>
+        <p>一覧のチェックを付けた経費だけ、「カテゴリ」「支払先」「支払い方法」をまとめて更新できます。</p>
+      </div>
+      <div class="bulk-edit-grid">
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_category" value="1"> カテゴリを変更</span><select name="bulk_category_id"><option value="">選択してください</option><?php foreach ($categories as $category): ?><option value="<?= e((string)((int)$category['id'])) ?>"><?= e($category['name']) ?></option><?php endforeach; ?></select></label>
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_payee" value="1"> 支払先を変更</span><input type="text" name="bulk_payee" placeholder="空欄で支払先を空にする"></label>
+        <label class="bulk-edit-field"><span class="checkbox-label"><input type="checkbox" name="apply_payment_method" value="1"> 支払い方法を変更</span><select name="bulk_payment_method"><option value="">選択しない（空にする）</option><?php foreach ($paymentMethods as $method): ?><option value="<?= e($method) ?>"><?= e($method) ?></option><?php endforeach; ?></select></label>
+      </div>
+      <div class="button-row bulk-edit-actions"><button class="btn primary" type="submit">選択した経費を一括更新</button><span class="bulk-selected-count" data-bulk-selected-count>0件選択中</span></div>
+    </div>
+  </form>
+
   <?php if ($categoryTotals): ?>
     <div class="category-summary">
       <div class="category-summary-header">
@@ -224,15 +318,16 @@ include __DIR__ . '/includes/header.php';
     <table class="expense-table">
       <thead>
         <tr>
-          <th>支払日</th><th>カテゴリ</th><th>作物</th><th>圃場</th><th>支払先</th><th>内容</th><th>金額</th><th>支払方法</th><th>領収書</th><th>操作</th>
+          <th><label class="table-check-label"><input type="checkbox" data-bulk-select-all aria-label="経費をすべて選択"></label></th><th>支払日</th><th>カテゴリ</th><th>作物</th><th>圃場</th><th>支払先</th><th>内容</th><th>金額</th><th>支払方法</th><th>領収書</th><th>操作</th>
         </tr>
       </thead>
       <tbody>
         <?php if (!$expenses): ?>
-          <tr><td colspan="10"><?= e((string)($hasSearchCondition ? '条件に一致する経費はありません。' : '経費がまだありません。')) ?></td></tr>
+          <tr><td colspan="11"><?= e((string)($hasSearchCondition ? '条件に一致する経費はありません。' : '経費がまだありません。')) ?></td></tr>
         <?php else: ?>
           <?php foreach ($expenses as $row): ?>
             <tr>
+              <td data-label="選択"><label class="table-check-label"><input type="checkbox" name="expense_ids[]" value="<?= e((string)((int)$row['id'])) ?>" form="bulk-edit-form" data-bulk-expense-checkbox aria-label="<?= e($row['expense_date'] . ' の経費を選択') ?>"></label></td>
               <td data-label="支払日"><?= e($row['expense_date']) ?></td>
               <td data-label="カテゴリ"><?= e($row['category_name'] ?? '未分類') ?></td>
               <td data-label="作物"><?= e($row['crop_name'] ?? '-') ?></td>
@@ -259,5 +354,49 @@ include __DIR__ . '/includes/header.php';
       </tbody>
     </table>
   </div>
+<script>
+(function(){
+  var form = document.querySelector('[data-bulk-edit-form]');
+  var selectAll = document.querySelector('[data-bulk-select-all]');
+  var checkboxes = Array.prototype.slice.call(document.querySelectorAll('[data-bulk-expense-checkbox]'));
+  var countLabel = document.querySelector('[data-bulk-selected-count]');
+  if (!form || !countLabel) return;
+
+  function updateCount() {
+    checkboxes.forEach(function(checkbox){
+      var row = checkbox.closest ? checkbox.closest('tr') : null;
+      if (row) {
+        row.classList.toggle('is-selected', checkbox.checked);
+      }
+    });
+    var selectedCount = checkboxes.filter(function(checkbox){ return checkbox.checked; }).length;
+    countLabel.textContent = selectedCount + '件選択中';
+    if (selectAll) {
+      selectAll.checked = checkboxes.length > 0 && selectedCount === checkboxes.length;
+      selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function(){
+      checkboxes.forEach(function(checkbox){ checkbox.checked = selectAll.checked; });
+      updateCount();
+    });
+  }
+  checkboxes.forEach(function(checkbox){ checkbox.addEventListener('change', updateCount); });
+  form.addEventListener('submit', function(event){
+    var selectedCount = checkboxes.filter(function(checkbox){ return checkbox.checked; }).length;
+    if (selectedCount === 0) {
+      event.preventDefault();
+      alert('一括編集する経費を選択してください。');
+      return;
+    }
+    if (!confirm(selectedCount + '件の経費を一括更新しますか？')) {
+      event.preventDefault();
+    }
+  });
+  updateCount();
+})();
+</script>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
