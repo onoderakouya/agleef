@@ -1071,6 +1071,21 @@ button:disabled,
 .sale-table th:nth-child(14),
 .sale-table td:nth-child(14) { width: 190px; }
 
+@media (min-width: 768px) {
+  .sale-table tbody td {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    vertical-align: middle;
+  }
+
+  .sale-table th:nth-child(15),
+  .sale-table td:nth-child(15) { width: 190px; }
+
+  .sale-table .inline-actions {
+    flex-wrap: nowrap;
+  }
+}
+
 @media (max-width: 767px) {
   .sale-table,
   .sale-table thead,
