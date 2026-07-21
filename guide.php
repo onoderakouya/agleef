@@ -9,8 +9,8 @@ include __DIR__ . '/includes/header.php';
 <section class="card public-page guide-page">
   <div class="public-hero">
     <p class="eyebrow">はじめての方へ</p>
-    <h2>アグリーフの使い方</h2>
-    <p class="description">アグリーフは、日々の農作業・売上・経費をまとめて記録できる農業日誌アプリです。まずは作物と圃場を登録し、日誌・経費・売上を少しずつ記録していきましょう。</p>
+    <h2>AGRIMOREの使い方</h2>
+    <p class="description">AGRIMOREは、日々の農作業・売上・経費をまとめて記録できる農業日誌アプリです。まずは作物と圃場を登録し、日誌・経費・売上を少しずつ記録していきましょう。</p>
     <div class="button-row">
       <?php if ($isLoggedIn): ?>
         <a class="btn primary" href="dashboard.php">ダッシュボードへ</a>
@@ -63,6 +63,6 @@ include __DIR__ . '/includes/header.php';
     </section>
   </div>
 
-  <div class="notice-box-app">アグリーフの集計機能は、入力されたデータをもとにした簡易集計です。確定申告や税務上の最終判断は、税理士・税務署等へ確認してください。</div>
+  <div class="notice-box-app">AGRIMOREの集計機能は、入力されたデータをもとにした簡易集計です。確定申告や税務上の最終判断は、税理士・税務署等へ確認してください。</div>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>

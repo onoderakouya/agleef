@@ -620,14 +620,14 @@ function get_export_date_range(int $year, string $dateFrom = '', string $dateTo 
 function build_csv_filename(string $type, int $year, string $dateFrom = '', string $dateTo = ''): string
 {
     $prefixes = [
-        'sales' => 'agleef_sales',
-        'expenses' => 'agleef_expenses',
-        'diaries' => 'agleef_diaries',
-        'annual_summary' => 'agleef_annual_summary',
-        'finance_all' => 'agleef_finance_all',
+        'sales' => 'agrimore_sales',
+        'expenses' => 'agrimore_expenses',
+        'diaries' => 'agrimore_diaries',
+        'annual_summary' => 'agrimore_annual_summary',
+        'finance_all' => 'agrimore_finance_all',
     ];
 
-    $base = $prefixes[$type] ?? 'agleef_export';
+    $base = $prefixes[$type] ?? 'agrimore_export';
     $range = get_export_date_range($year, $dateFrom, $dateTo);
 
     return $base . '_' . $range['label'] . '.csv';
