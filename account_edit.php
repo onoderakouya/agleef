@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/email_delivery.php';
 require_login();
 
 $stmt = db()->prepare('SELECT id, username, email, password_hash FROM users WHERE id = :id LIMIT 1');
@@ -77,12 +78,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('account.php');
         }
 
-        $update = db()->prepare('UPDATE users SET username = :username, email = :email, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
+        $pdo = db();
+        $pdo->beginTransaction();
+        $update = $pdo->prepare('UPDATE users SET username = :username, email = :email, updated_at = CURRENT_TIMESTAMP WHERE id = :id');
         $update->execute([
             ':username' => $newUsername,
             ':email' => $newEmail,
             ':id' => current_user_id(),
         ]);
+        sync_subscription_email(current_user_id(), $newEmail);
+        $pdo->commit();
 
         $_SESSION['username'] = $newUsername;
         set_flash('success', '登録情報を変更しました。');

@@ -69,6 +69,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
               <a href="admin_dashboard.php">管理画面</a>
               <a href="admin_users.php">ユーザー一覧</a>
               <a href="admin_contacts.php">問い合わせ一覧</a>
+              <a href="admin_emails.php">メール配信</a>
               <a href="admin_settings.php">アプリ設定</a>
               <a href="admin_logs.php">管理者操作ログ</a>
             <?php endif; ?>

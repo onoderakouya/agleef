@@ -19,7 +19,7 @@ $latestLogs = $pdo->query('SELECT l.*, u.username FROM admin_logs l LEFT JOIN us
 $pageTitle = '管理者ダッシュボード | ' . APP_NAME;
 include __DIR__ . '/includes/header.php';
 ?>
-<section class="card admin-hero"><h2>管理者専用：運営者ダッシュボード</h2><p class="description">登録者・問い合わせ・登録受付状態・停止ユーザー・操作ログを確認します。</p><div class="button-row"><a class="btn primary" href="admin_users.php">ユーザー一覧</a><a class="btn primary" href="admin_contacts.php">問い合わせ一覧</a><a class="btn" href="admin_settings.php">アプリ設定</a><a class="btn" href="admin_logs.php">管理者操作ログ</a><a class="btn" href="dashboard.php">通常ダッシュボードへ戻る</a></div></section>
+<section class="card admin-hero"><h2>管理者専用：運営者ダッシュボード</h2><p class="description">登録者・問い合わせ・登録受付状態・停止ユーザー・操作ログを確認します。</p><div class="button-row"><a class="btn primary" href="admin_users.php">ユーザー一覧</a><a class="btn primary" href="admin_contacts.php">問い合わせ一覧</a><a class="btn primary" href="admin_emails.php">メール配信</a><a class="btn" href="admin_settings.php">アプリ設定</a><a class="btn" href="admin_logs.php">管理者操作ログ</a><a class="btn" href="dashboard.php">通常ダッシュボードへ戻る</a></div></section>
 <section class="card"><h3>運用サマリー</h3><div class="summary-grid admin-summary-grid">
 <?php foreach ([['総登録ユーザー数',$totalUsers],['今日登録されたユーザー数',$todayUsers],['今月登録されたユーザー数',$monthUsers],['アクティブユーザー数',$activeUsers],['停止中ユーザー数',$suspendedUsers],['管理者ユーザー数',$adminUsers],['一般ユーザー数',$regularUsers],['新規登録受付状態',$registrationEnabled?'受付中':'停止中'],['未対応問い合わせ件数',$unhandledContacts],['今月のログインユーザー数',$monthLoginUsers]] as $card): ?><div class="summary-card"><span><?= e((string)$card[0]) ?></span><strong><?= e((string)$card[1]) ?></strong></div><?php endforeach; ?>
 </div></section>

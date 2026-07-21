@@ -8,6 +8,14 @@ define('SALE_UPLOAD_DIR', UPLOAD_DIR . '/sales');
 define('MAX_UPLOAD_SIZE', 3 * 1024 * 1024); // 3MB
 define('CONTACT_EMAIL', 'info@runfirm.net');
 
+// 配信設定は環境変数で上書きします。認証情報・署名鍵はソースへ保存しません。
+define('MAIL_TRANSPORT', getenv('MAIL_TRANSPORT') ?: 'mb_send_mail');
+define('MAIL_FROM_ADDRESS', getenv('MAIL_FROM_ADDRESS') ?: CONTACT_EMAIL);
+define('MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ?: APP_NAME);
+define('MAIL_REPLY_TO', getenv('MAIL_REPLY_TO') ?: CONTACT_EMAIL);
+define('MAIL_BATCH_SIZE', max(1, (int)(getenv('MAIL_BATCH_SIZE') ?: 50)));
+define('MAIL_MAX_ATTEMPTS', max(1, (int)(getenv('MAIL_MAX_ATTEMPTS') ?: 3)));
+
 // HTTPS enforcement.
 // ローカル開発環境（localhost / 127.0.0.1 など）は除外し、公開環境では常時HTTPSへ統一します。
 define('FORCE_HTTPS', true);

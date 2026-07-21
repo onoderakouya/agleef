@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/email_delivery.php';
 
 if (is_logged_in()) {
     redirect('dashboard.php');
@@ -8,6 +9,7 @@ if (is_logged_in()) {
 $errors = [];
 $username = '';
 $email = '';
+$emailConsent = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim((string)($_POST['username'] ?? ''));
@@ -15,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = function_exists('mb_strtolower') ? mb_strtolower($email, 'UTF-8') : strtolower($email);
     $password = (string)($_POST['password'] ?? '');
     $passwordConfirmation = (string)($_POST['password_confirmation'] ?? '');
+    $emailConsentValue = $_POST['email_consent'] ?? null;
+    $emailConsent = $emailConsentValue === '1';
+    if ($emailConsentValue !== null && $emailConsentValue !== '1') {
+        $errors[] = 'メール配信設定の指定が正しくありません。';
+    }
 
     if (!is_registration_allowed()) {
         $errors[] = '現在、新規登録は停止中です。';
@@ -83,6 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $newUserId = (int)$pdo->lastInsertId();
+            $subscription = $pdo->prepare("INSERT INTO email_subscriptions
+                (user_id,email,status,consent_source,subscribed_at,created_at,updated_at)
+                VALUES(:user_id,:email,:status,'registration',:subscribed_at,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)");
+            $subscription->execute([
+                ':user_id'=>$newUserId, ':email'=>$email,
+                ':status'=>$emailConsent ? 'subscribed' : 'not_subscribed',
+                ':subscribed_at'=>$emailConsent ? date('Y-m-d H:i:s') : null,
+            ]);
             ensure_default_expense_categories($newUserId);
 
             $pdo->commit();
@@ -129,6 +144,11 @@ include __DIR__ . '/includes/header.php';
         ユーザー名
         <input type="text" name="username" value="<?= e($username) ?>" autocomplete="username" minlength="3" maxlength="50" required>
         <span class="form-help">3文字以上50文字以内で入力してください。</span>
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" name="email_consent" value="1" <?= $emailConsent ? 'checked' : '' ?>>
+        AGRIMOREから機能追加のお知らせや活用情報をメールで受け取る
+        <span class="form-help">配信設定は、登録後にアカウント設定からいつでも変更できます。</span>
       </label>
       <label>
         メールアドレス

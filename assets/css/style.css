@@ -2097,3 +2097,6 @@ body.has-photo-modal {
   background: #f1faf4;
   box-shadow: inset 4px 0 0 #2f855a;
 }
+.mail-preview { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font-family: inherit; }
+.checkbox-label { display: grid; grid-template-columns: auto 1fr; gap: .4rem .7rem; align-items: start; }
+.checkbox-label .form-help { grid-column: 2; }
