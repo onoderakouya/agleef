@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DB_PATH="${DB_PATH:-${PROJECT_ROOT}/database.sqlite}"
 UPLOADS_DIR="${UPLOADS_DIR:-${PROJECT_ROOT}/assets/uploads}"
-BACKUP_DIR="${BACKUP_DIR:-$(cd "${PROJECT_ROOT}/.." && pwd)/agleef-backups}"
+BACKUP_DIR="${BACKUP_DIR:-$(cd "${PROJECT_ROOT}/.." && pwd)/agrimore-backups}"
 DATE_SUFFIX="${BACKUP_DATE:-$(date +%Y%m%d)}"
 DB_ONLY=0
 UPLOADS_ONLY=0
@@ -22,7 +22,7 @@ Usage: $(basename "$0") [--db-only|--uploads-only]
 Environment variables:
   DB_PATH       SQLite DB path (default: PROJECT_ROOT/database.sqlite)
   UPLOADS_DIR   uploads directory (default: PROJECT_ROOT/assets/uploads)
-  BACKUP_DIR    backup destination (default: ../agleef-backups)
+  BACKUP_DIR    backup destination (default: ../agrimore-backups)
   BACKUP_DATE   date suffix (default: current date as YYYYMMDD)
 USAGE
 }

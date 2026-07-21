@@ -94,7 +94,7 @@
 
 `index.php` は未ログインユーザーでも閲覧できる公開LPです。`require_login()` は呼び出さず、セッション状態だけを確認して、ログイン中の場合は「ダッシュボードへ」の導線を表示します。
 
-- 表示URL例: `https://honocca.com/agleef/`
+- 表示URL例: `https://honocca.com/agrimore/`
 - LP専用CSS: `assets/css/lp.css`
 - 新規登録導線: `register.php`
 - ログイン導線: `login.php`
@@ -173,10 +173,10 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 
 ### 保存形式
 
-標準のバックアップ先はプロジェクトルートの1階層上にある `agleef-backups/` です。Web公開ディレクトリがこのリポジトリの場合、公開ディレクトリ外になります。サーバー構成に合わせて `BACKUP_DIR` で明示指定してください。
+標準のバックアップ先はプロジェクトルートの1階層上にある `agrimore-backups/` です。Web公開ディレクトリがこのリポジトリの場合、公開ディレクトリ外になります。サーバー構成に合わせて `BACKUP_DIR` で明示指定してください。
 
 ```text
-../agleef-backups/
+../agrimore-backups/
   database_YYYYMMDD.sqlite
   uploads_YYYYMMDD.zip
 ```
@@ -192,7 +192,7 @@ DBとアップロードファイルをまとめてバックアップします。
 保存先を明示する場合は、必ずWebから直接アクセスできない場所を指定します。
 
 ```bash
-BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh
+BACKUP_DIR=/home/your-user/agrimore-backups ./scripts/backup.sh
 ```
 
 本番反映前は、最低限DBバックアップを必ず作成してからデプロイ・migrationを実行します。
@@ -206,14 +206,14 @@ BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh
 cronで毎日3:10にDBとアップロードファイルをバックアップする例です。`BACKUP_DIR` は公開ディレクトリ外の絶対パスに置き換えてください。
 
 ```cron
-10 3 * * * cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh >> /home/your-user/agleef-backups/backup.log 2>&1
+10 3 * * * cd /path/to/agrimore && BACKUP_DIR=/home/your-user/agrimore-backups ./scripts/backup.sh >> /home/your-user/agrimore-backups/backup.log 2>&1
 ```
 
 アップロードファイルが大きい場合は、DBは毎日、アップロードファイルは週1回などに分けて実行できます。
 
 ```cron
-10 3 * * * cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh --db-only >> /home/your-user/agleef-backups/backup.log 2>&1
-30 3 * * 0 cd /path/to/agleef && BACKUP_DIR=/home/your-user/agleef-backups ./scripts/backup.sh --uploads-only >> /home/your-user/agleef-backups/backup.log 2>&1
+10 3 * * * cd /path/to/agrimore && BACKUP_DIR=/home/your-user/agrimore-backups ./scripts/backup.sh --db-only >> /home/your-user/agrimore-backups/backup.log 2>&1
+30 3 * * 0 cd /path/to/agrimore && BACKUP_DIR=/home/your-user/agrimore-backups ./scripts/backup.sh --uploads-only >> /home/your-user/agrimore-backups/backup.log 2>&1
 ```
 
 ### 復元手順
@@ -228,13 +228,13 @@ if [ -d assets/uploads ]; then mv assets/uploads assets/uploads.before-restore; 
 DBを復元します。
 
 ```bash
-cp /home/your-user/agleef-backups/database_YYYYMMDD.sqlite database.sqlite
+cp /home/your-user/agrimore-backups/database_YYYYMMDD.sqlite database.sqlite
 ```
 
 アップロードファイルを復元します。
 
 ```bash
-unzip /home/your-user/agleef-backups/uploads_YYYYMMDD.zip -d .
+unzip /home/your-user/agrimore-backups/uploads_YYYYMMDD.zip -d .
 ```
 
 復元後、Webサーバー実行ユーザーがDBとアップロードディレクトリを読み書きできるよう権限を確認します。
@@ -567,12 +567,12 @@ sqlite3 database.sqlite "PRAGMA foreign_key_check;"
 
 ### ファイル名例
 
-- `agleef_sales_2026.csv`
-- `agleef_expenses_2026.csv`
-- `agleef_diaries_2026.csv`
-- `agleef_annual_summary_2026.csv`
-- `agleef_finance_all_2026.csv`
-- `agleef_sales_2026-06-01_2026-06-30.csv`
+- `agrimore_sales_2026.csv`
+- `agrimore_expenses_2026.csv`
+- `agrimore_diaries_2026.csv`
+- `agrimore_annual_summary_2026.csv`
+- `agrimore_finance_all_2026.csv`
+- `agrimore_sales_2026-06-01_2026-06-30.csv`
 
 ### ローカルでの動作確認手順
 
@@ -767,7 +767,7 @@ sqlite3 database.sqlite "SELECT id, username, is_admin FROM users WHERE is_admin
 
 ローカル環境では PHP ビルトインサーバーなどで起動し、未ログイン状態で `guide.php`、`faq.php`、`contact.php`、`privacy.php`、`terms.php` が表示できることを確認します。ログイン後は `dashboard.php` のチェックリスト、ヘッダーの使い方・FAQ・お問い合わせリンク、フッターの規約系リンクを確認してください。
 
-本番サーバーでは `https://honocca.com/agleef/guide.php` などの公開URLを直接開き、未ログインで閲覧できること、LP・ログイン・新規登録画面から各ページへ移動できること、スマホ幅で表示が崩れないことを確認してください。
+本番サーバーでは `https://honocca.com/agrimore/guide.php` などの公開URLを直接開き、未ログインで閲覧できること、LP・ログイン・新規登録画面から各ページへ移動できること、スマホ幅で表示が崩れないことを確認してください。
 
 ## 運用者向け管理機能のDB反映
 

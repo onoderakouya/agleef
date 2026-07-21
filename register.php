@@ -105,7 +105,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="card narrow auth-card">
   <h2>新規登録</h2>
-  <p class="description">アグリーフを利用するためのアカウントを作成します。</p>
+  <p class="description">AGRIMOREを利用するためのアカウントを作成します。</p>
 
   <?php if (!is_registration_allowed()): ?>
     <p class="alert error">現在、新規登録は停止中です。</p>

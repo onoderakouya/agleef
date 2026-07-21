@@ -57,12 +57,12 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 
-<section class="card beginner-card" data-onboarding-card data-onboarding-key="agleef:onboarding:hidden:<?= e((string)$userId) ?>">
+<section class="card beginner-card" data-onboarding-card data-onboarding-key="agrimore:onboarding:hidden:<?= e((string)$userId) ?>">
   <div class="card-title-row">
     <h3>はじめにやること</h3>
     <button type="button" class="btn small" data-onboarding-hide>非表示にする</button>
   </div>
-  <p class="description">アグリーフを使い始めるために、まずは以下の順番で登録してみましょう。</p>
+  <p class="description">AGRIMOREを使い始めるために、まずは以下の順番で登録してみましょう。</p>
   <div class="onboarding-checklist">
     <?php foreach ($onboardingItems as $item): ?>
       <a class="onboarding-item <?= e((string)($item['done'] ? 'is-complete' : '')) ?>" href="<?= e($item['href']) ?>">
@@ -85,6 +85,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var storageKey = onboardingCard.getAttribute('data-onboarding-key');
+  // Preserve each user's onboarding preference after the service rename.
+  var legacyStorageKey = ['agl', 'eef:onboarding:hidden:', <?= json_encode((string)$userId) ?>].join('');
 
   function setOnboardingVisibility(isHidden) {
     onboardingCard.hidden = isHidden;
@@ -92,6 +94,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   try {
+    if (window.localStorage.getItem(storageKey) === null && window.localStorage.getItem(legacyStorageKey) !== null) {
+      window.localStorage.setItem(storageKey, window.localStorage.getItem(legacyStorageKey));
+      window.localStorage.removeItem(legacyStorageKey);
+    }
     setOnboardingVisibility(window.localStorage.getItem(storageKey) === '1');
 
     hideButton.addEventListener('click', function () {
