@@ -142,22 +142,45 @@ document.addEventListener('DOMContentLoaded', function () {
 </section>
 <?php endif; ?>
 
-<section class="card">
+<section class="card dashboard-menu-section">
   <h3>メニュー</h3>
-  <div class="button-row dashboard-actions">
-    <a class="btn primary" href="diary_create.php">＋ 日誌登録</a>
-    <a class="btn" href="diary_list.php">日誌一覧</a>
-    <a class="btn" href="crops.php">作物管理</a>
-    <a class="btn" href="fields.php">圃場管理</a>
-    <a class="btn primary" href="expense_create.php">＋ 経費を登録する</a>
-    <a class="btn" href="expense_list.php">経費一覧を見る</a>
-    <a class="btn primary" href="sale_create.php">＋ 売上を登録する</a>
-    <a class="btn" href="sale_list.php">売上一覧を見る</a>
-    <a class="btn primary" href="annual_summary.php">年間集計を見る</a>
-    <a class="btn primary" href="export.php">CSV出力</a>
-    <a class="btn" href="expense_category.php">経費カテゴリを管理する</a>
-    <a class="btn" href="account.php">アカウント情報を確認する</a>
-    <a class="btn" href="contact.php">お問い合わせ・改善要望を送る</a>
+  <div class="dashboard-quick-actions">
+    <h4>クイック操作</h4>
+    <div class="dashboard-quick-actions-grid">
+      <a class="dashboard-quick-action" href="diary_create.php"><span class="dashboard-quick-action-icon" aria-hidden="true">✎</span><span>日誌を登録</span></a>
+      <a class="dashboard-quick-action" href="expense_create.php"><span class="dashboard-quick-action-icon" aria-hidden="true">¥</span><span>経費を登録</span></a>
+      <a class="dashboard-quick-action" href="sale_create.php"><span class="dashboard-quick-action-icon" aria-hidden="true">↗</span><span>売上を登録</span></a>
+    </div>
+  </div>
+
+  <div class="dashboard-menu-grid">
+    <section class="dashboard-menu-card" aria-labelledby="dashboard-cultivation-menu">
+      <h4 id="dashboard-cultivation-menu">日誌・栽培管理</h4>
+      <nav class="dashboard-menu-links" aria-label="日誌・栽培管理メニュー">
+        <a class="dashboard-menu-link" href="diary_list.php"><span>日誌一覧</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="crops.php"><span>作物管理</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="fields.php"><span>圃場管理</span><span aria-hidden="true">›</span></a>
+      </nav>
+    </section>
+
+    <section class="dashboard-menu-card" aria-labelledby="dashboard-management-menu">
+      <h4 id="dashboard-management-menu">経営管理</h4>
+      <nav class="dashboard-menu-links" aria-label="経営管理メニュー">
+        <a class="dashboard-menu-link" href="expense_list.php"><span>経費一覧</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="sale_list.php"><span>売上一覧</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="annual_summary.php"><span>年間集計</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="expense_category.php"><span>経費カテゴリ管理</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="export.php"><span>CSV出力</span><span aria-hidden="true">›</span></a>
+      </nav>
+    </section>
+
+    <section class="dashboard-menu-card" aria-labelledby="dashboard-support-menu">
+      <h4 id="dashboard-support-menu">設定・サポート</h4>
+      <nav class="dashboard-menu-links" aria-label="設定・サポートメニュー">
+        <a class="dashboard-menu-link" href="account.php"><span>アカウント情報</span><span aria-hidden="true">›</span></a>
+        <a class="dashboard-menu-link" href="contact.php"><span>お問い合わせ・改善要望</span><span aria-hidden="true">›</span></a>
+      </nav>
+    </section>
   </div>
 </section>
 <?php include __DIR__ . '/includes/footer.php'; ?>
