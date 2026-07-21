@@ -166,6 +166,24 @@ sqlite3 database.sqlite "PRAGMA table_info(diaries);"
 
 `photo_path` がすでに表示されている場合、`migrations/add_photo_path_to_diaries.sql` は実行しないでください。
 
+### メール配信テーブル
+
+バックアップ後、既存ユーザーを「未同意」として安全に作成します（自動的に配信対象にはなりません）。
+
+```bash
+sqlite3 database.sqlite < migrations/20260721_create_email_delivery_tables.sql
+```
+
+配信には `.env.example` に記載した環境変数をWebサーバーとcronへ設定してください。特に
+`APP_UNSUBSCRIBE_SECRET` は32文字以上の推測困難な値を必須とし、リポジトリへ保存しません。
+現在の最小構成では既存方針を崩さず、受信者ごとに `mb_send_mail` を呼び出します。
+
+キューを1分ごとに最大 `MAIL_BATCH_SIZE` 件処理するcron例です。
+
+```cron
+* * * * * cd /path/to/agrimore && /usr/bin/php bin/process_email_queue.php >> /path/outside-webroot/email-queue.log 2>&1
+```
+
 
 ## 7. バックアップ設計・復元手順
 

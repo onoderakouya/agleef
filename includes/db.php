@@ -49,6 +49,7 @@ function initialize_database(PDO $pdo): void
     ensure_sales_table($pdo);
     ensure_contact_requests_table($pdo);
     ensure_admin_operations_tables($pdo);
+    ensure_email_delivery_tables($pdo);
 
     $stmt = db_execute($pdo, 'SELECT COUNT(*) FROM users WHERE username = :username', [':username' => 'demo']);
 
@@ -59,6 +60,53 @@ function initialize_database(PDO $pdo): void
             ':password_hash' => password_hash('password', PASSWORD_DEFAULT),
         ]);
     }
+}
+
+function ensure_email_delivery_tables(PDO $pdo): void
+{
+    db_execute($pdo, "CREATE TABLE IF NOT EXISTS email_subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL UNIQUE,
+        email TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'not_subscribed'
+            CHECK(status IN ('subscribed','unsubscribed','not_subscribed')),
+        consent_source TEXT, subscribed_at TEXT, unsubscribed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    )");
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_email_subscriptions_email ON email_subscriptions(email COLLATE NOCASE)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_email_subscriptions_status ON email_subscriptions(status)');
+
+    db_execute($pdo, "CREATE TABLE IF NOT EXISTS email_campaigns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, subject TEXT NOT NULL, body_text TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','queued','sending','completed','cancelled')),
+        created_by INTEGER NOT NULL, target_filter TEXT NOT NULL DEFAULT 'subscribed_active',
+        from_name TEXT, from_address TEXT, reply_to TEXT,
+        total_count INTEGER NOT NULL DEFAULT 0, queued_count INTEGER NOT NULL DEFAULT 0,
+        sent_count INTEGER NOT NULL DEFAULT 0, failed_count INTEGER NOT NULL DEFAULT 0,
+        skipped_count INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, queued_at TEXT, started_at TEXT,
+        completed_at TEXT, cancelled_at TEXT,
+        FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE RESTRICT
+    )");
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_email_campaigns_status ON email_campaigns(status, created_at)');
+
+    db_execute($pdo, "CREATE TABLE IF NOT EXISTS email_campaign_recipients (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, campaign_id INTEGER NOT NULL, user_id INTEGER NOT NULL,
+        email TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued'
+            CHECK(status IN ('queued','processing','sent','failed','skipped')),
+        attempt_count INTEGER NOT NULL DEFAULT 0, last_error TEXT, next_attempt_at TEXT,
+        queued_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, sent_at TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(campaign_id) REFERENCES email_campaigns(id) ON DELETE CASCADE,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(campaign_id, user_id)
+    )");
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_email_recipients_queue ON email_campaign_recipients(status, next_attempt_at, id)');
+    db_execute($pdo, 'CREATE INDEX IF NOT EXISTS idx_email_recipients_campaign ON email_campaign_recipients(campaign_id, status)');
+
+    // Existing users never become subscribed implicitly.
+    db_execute($pdo, "INSERT OR IGNORE INTO email_subscriptions (user_id,email,status,consent_source)
+        SELECT id,email,'not_subscribed','migration' FROM users");
 }
 
 function ensure_users_table(PDO $pdo): void
