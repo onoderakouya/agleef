@@ -21,6 +21,13 @@ $yearSaleStmt = db()->prepare('SELECT COALESCE(SUM(gross_amount), 0) FROM sales 
 $yearSaleStmt->execute([':user_id' => $userId, ':start' => date('Y-01-01'), ':end' => date('Y-12-31')]);
 $yearSaleTotal = (int)$yearSaleStmt->fetchColumn();
 
+$monthBalance = $monthSaleTotal - $monthExpenseTotal;
+$yearBalance = $yearSaleTotal - $yearExpenseTotal;
+$monthBalanceState = $monthBalance > 0 ? 'is-positive' : ($monthBalance < 0 ? 'is-negative' : 'is-zero');
+$yearBalanceState = $yearBalance > 0 ? 'is-positive' : ($yearBalance < 0 ? 'is-negative' : 'is-zero');
+$monthBalanceStatus = $monthBalance > 0 ? '黒字' : ($monthBalance < 0 ? '赤字' : '収支ゼロ');
+$yearBalanceStatus = $yearBalance > 0 ? '黒字' : ($yearBalance < 0 ? '赤字' : '収支ゼロ');
+
 $onboardingTables = [
     'crops' => 'crops',
     'fields' => 'fields',
@@ -115,16 +122,46 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<section class="card">
-  <h3>簡易サマリー</h3>
-  <p class="description">差引は「売上合計 − 経費合計」の簡易目安です。本格的な所得計算ではありません。</p>
-  <div class="summary-grid">
-    <div class="summary-card summary-card--month"><span>今月の売上</span><strong><?= e(format_yen($monthSaleTotal)) ?></strong></div>
-    <div class="summary-card summary-card--month"><span>今月の経費</span><strong><?= e(format_yen($monthExpenseTotal)) ?></strong></div>
-    <div class="summary-card summary-card--month"><span>今月の差引</span><strong><?= e(format_yen($monthSaleTotal - $monthExpenseTotal)) ?></strong></div>
-    <div class="summary-card"><span>今年の売上</span><strong><?= e(format_yen($yearSaleTotal)) ?></strong></div>
-    <div class="summary-card"><span>今年の経費</span><strong><?= e(format_yen($yearExpenseTotal)) ?></strong></div>
-    <div class="summary-card"><span>今年の差引</span><strong><?= e(format_yen($yearSaleTotal - $yearExpenseTotal)) ?></strong></div>
+<section class="card dashboard-summary" aria-labelledby="dashboard-summary-title">
+  <h3 id="dashboard-summary-title">簡易サマリー</h3>
+  <p class="dashboard-summary-description">売上－経費の簡易集計です。確定申告用の所得計算ではありません。</p>
+
+  <div class="dashboard-summary-group" aria-labelledby="dashboard-summary-month">
+    <h4 class="dashboard-summary-group-title" id="dashboard-summary-month">今月</h4>
+    <div class="dashboard-summary-grid">
+      <div class="dashboard-summary-card dashboard-summary-card--sales">
+        <span class="dashboard-summary-label">売上</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($monthSaleTotal)) ?></strong>
+      </div>
+      <div class="dashboard-summary-card dashboard-summary-card--expense">
+        <span class="dashboard-summary-label">経費</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($monthExpenseTotal)) ?></strong>
+      </div>
+      <div class="dashboard-summary-card dashboard-summary-card--balance <?= e($monthBalanceState) ?>">
+        <span class="dashboard-summary-label">収支</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($monthBalance)) ?></strong>
+        <span class="dashboard-summary-status"><?= e($monthBalanceStatus) ?></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-summary-group" aria-labelledby="dashboard-summary-year">
+    <h4 class="dashboard-summary-group-title" id="dashboard-summary-year">今年</h4>
+    <div class="dashboard-summary-grid">
+      <div class="dashboard-summary-card dashboard-summary-card--sales">
+        <span class="dashboard-summary-label">売上</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($yearSaleTotal)) ?></strong>
+      </div>
+      <div class="dashboard-summary-card dashboard-summary-card--expense">
+        <span class="dashboard-summary-label">経費</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($yearExpenseTotal)) ?></strong>
+      </div>
+      <div class="dashboard-summary-card dashboard-summary-card--balance <?= e($yearBalanceState) ?>">
+        <span class="dashboard-summary-label">収支</span>
+        <strong class="dashboard-summary-value"><?= e(format_yen($yearBalance)) ?></strong>
+        <span class="dashboard-summary-status"><?= e($yearBalanceStatus) ?></span>
+      </div>
+    </div>
   </div>
 </section>
 
