@@ -1,6 +1,6 @@
 <?php
 // アプリ共通設定
-define('APP_NAME', 'AGRIMORE');
+define('APP_NAME', 'AgriMore');
 define('DB_PATH', __DIR__ . '/../database.sqlite');
 define('UPLOAD_DIR', __DIR__ . '/../assets/uploads');
 define('EXPENSE_UPLOAD_DIR', UPLOAD_DIR . '/expenses');
