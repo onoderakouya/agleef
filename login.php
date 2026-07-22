@@ -11,16 +11,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
-    $username = trim($_POST['username'] ?? '');
+    $loginIdentifier = trim((string)($_POST['login_identifier'] ?? ''));
     $password = $_POST['password'] ?? '';
 
-    if ($username === '' || $password === '') {
-        set_flash('error', 'ユーザー名とパスワードを入力してください。');
+    if ($loginIdentifier === '' || $password === '') {
+        set_flash('error', 'ユーザー名またはメールアドレスとパスワードを入力してください。');
         redirect('login.php');
     }
 
-    $stmt = db()->prepare('SELECT id, username, password_hash, is_admin, is_suspended FROM users WHERE username = :username LIMIT 1');
-    $stmt->execute([':username' => $username]);
+    $stmt = db()->prepare(
+        'SELECT id, username, password_hash, is_admin, is_suspended
+         FROM users
+         WHERE username = :username OR lower(email) = lower(:email)
+         LIMIT 1'
+    );
+    $stmt->execute([
+        ':username' => $loginIdentifier,
+        ':email' => $loginIdentifier,
+    ]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
@@ -41,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('dashboard.php');
     }
 
-    set_flash('error', 'ユーザー名またはパスワードが正しくありません。');
+    set_flash('error', 'ユーザー名、メールアドレス、またはパスワードが正しくありません。');
     redirect('login.php');
 }
 
@@ -55,8 +63,8 @@ include __DIR__ . '/includes/header.php';
   <form method="post" class="stack">
     <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
     <label>
-      ユーザー名
-      <input type="text" name="username" autocomplete="username" required>
+      ユーザー名またはメールアドレス
+      <input type="text" name="login_identifier" autocomplete="username" required>
     </label>
     <label>
       パスワード
