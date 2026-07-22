@@ -79,7 +79,7 @@ function campaign_message(array $campaign, array $subscription): string
     $operator = mail_setting('APP_OPERATOR_NAME', APP_NAME);
     $support = mail_setting('SUPPORT_EMAIL', CONTACT_EMAIL);
     return rtrim((string)$campaign['body_text']) . "\n\n――――――――――\n"
-        . "このメールは、AGRIMOREからのお知らせメールを希望された方へお送りしています。\n\n"
+        . "このメールは、AgriMoreからのお知らせメールを希望された方へお送りしています。\n\n"
         . "配信停止はこちら：\n{$url}\n\nお問い合わせ：\n{$support}\n\n{$operator}\n――――――――――\n";
 }
 

@@ -120,7 +120,7 @@ include __DIR__ . '/includes/header.php';
 ?>
 <section class="card narrow auth-card">
   <h2>新規登録</h2>
-  <p class="description">AGRIMOREを利用するためのアカウントを作成します。</p>
+  <p class="description">AgriMoreを利用するためのアカウントを作成します。</p>
 
   <?php if (!is_registration_allowed()): ?>
     <p class="alert error">現在、新規登録は停止中です。</p>
@@ -147,7 +147,7 @@ include __DIR__ . '/includes/header.php';
       </label>
       <label class="checkbox-label">
         <input type="checkbox" name="email_consent" value="1" <?= $emailConsent ? 'checked' : '' ?>>
-        AGRIMOREから機能追加のお知らせや活用情報をメールで受け取る
+        AgriMoreから機能追加のお知らせや活用情報をメールで受け取る
         <span class="form-help">配信設定は、登録後にアカウント設定からいつでも変更できます。</span>
       </label>
       <label>

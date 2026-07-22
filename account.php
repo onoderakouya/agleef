@@ -50,9 +50,9 @@ include __DIR__ . '/includes/header.php';
 </section>
 <section class="card">
   <h2>メール配信設定</h2>
-  <p class="description">機能追加、メンテナンス情報、AGRIMOREの活用方法などをお送りします。</p>
+  <p class="description">機能追加、メンテナンス情報、AgriMoreの活用方法などをお送りします。</p>
   <form method="post" class="stack"><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-    <label class="checkbox-label"><input type="checkbox" name="email_subscription" value="1" <?= $subscription['status']==='subscribed'?'checked':'' ?>> AGRIMOREからのお知らせを受け取る</label>
+    <label class="checkbox-label"><input type="checkbox" name="email_subscription" value="1" <?= $subscription['status']==='subscribed'?'checked':'' ?>> AgriMoreからのお知らせを受け取る</label>
     <button class="primary" type="submit">配信設定を保存する</button>
   </form>
 </section>

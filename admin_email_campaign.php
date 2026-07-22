@@ -13,7 +13,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   else{$pdo->prepare('UPDATE email_campaigns SET subject=:subject,body_text=:body,updated_at=CURRENT_TIMESTAMP WHERE id=:id AND status=\'draft\'')->execute([':subject'=>$subject,':body'=>$body,':id'=>$id]);log_admin_action(current_user_id(),'メール下書き更新','email_campaign',$id);}
   if($action==='test'){
    $test=trim((string)($_POST['test_email']??''));if($test==='' ){$u=$pdo->prepare('SELECT email FROM users WHERE id=:id');$u->execute([':id'=>current_user_id()]);$test=(string)$u->fetchColumn();}
-   if(!filter_var($test,FILTER_VALIDATE_EMAIL)){$errors[]='テスト送信先が正しくありません。';}else{try{$sub=email_subscription_for_user(current_user_id());$testCampaign=['body_text'=>$body];send_individual_mail($test,'【テスト】AGRIMORE '.$subject,campaign_message($testCampaign,$sub));log_admin_action(current_user_id(),'メールテスト送信','email_campaign',$id);set_flash('success','テストメールを送信しました。');redirect('admin_email_campaign.php?id='.$id);}catch(Throwable $e){$errors[]='テスト送信に失敗しました。設定を確認してください。';}}
+   if(!filter_var($test,FILTER_VALIDATE_EMAIL)){$errors[]='テスト送信先が正しくありません。';}else{try{$sub=email_subscription_for_user(current_user_id());$testCampaign=['body_text'=>$body];send_individual_mail($test,'【テスト】AgriMore '.$subject,campaign_message($testCampaign,$sub));log_admin_action(current_user_id(),'メールテスト送信','email_campaign',$id);set_flash('success','テストメールを送信しました。');redirect('admin_email_campaign.php?id='.$id);}catch(Throwable $e){$errors[]='テスト送信に失敗しました。設定を確認してください。';}}
   }elseif($action==='confirm'){redirect('admin_email_confirm.php?id='.$id);}else{set_flash('success','下書きを保存しました。');redirect('admin_email_campaign.php?id='.$id);}
  }
 }

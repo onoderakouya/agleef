@@ -2,22 +2,22 @@
 require_once __DIR__ . '/includes/auth.php';
 
 $isLoggedIn = is_logged_in();
-$pageTitle = 'AGRIMORE | 農業の記録を、もっとかんたんに。';
+$pageTitle = 'AgriMore | 農業の記録を、もっとかんたんに。';
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AGRIMOREは、日々の作業日誌・売上・経費をまとめて記録できる、農家のためのシンプルな農業日誌アプリです。">
+  <meta name="description" content="AgriMoreは、日々の作業日誌・売上・経費をまとめて記録できる、農家のためのシンプルな農業日誌アプリです。">
   <title><?= e($pageTitle) ?></title>
   <link rel="stylesheet" href="assets/css/lp.css">
 </head>
 <body>
   <header class="lp-header">
     <div class="lp-container lp-header__inner">
-      <a class="lp-brand" href="index.php" aria-label="AGRIMORE トップページ">
-        <span class="lp-brand__title">AGRIMORE</span>
+      <a class="lp-brand" href="index.php" aria-label="AgriMore トップページ">
+        <span class="lp-brand__title">AgriMore</span>
         <span class="lp-brand__subtitle">農業日誌アプリ</span>
       </a>
       <nav class="lp-nav" aria-label="ランディングページ内ナビゲーション">
@@ -42,7 +42,7 @@ $pageTitle = 'AGRIMORE | 農業の記録を、もっとかんたんに。';
         <div class="hero__content">
           <p class="eyebrow">農家のためのシンプルな記録アプリ</p>
           <h1>農業の記録を、もっとかんたんに。</h1>
-          <p class="hero__lead">AGRIMOREは、日々の作業日誌・売上・経費をまとめて記録できる、農家のためのシンプルな農業日誌アプリです。</p>
+          <p class="hero__lead">AgriMoreは、日々の作業日誌・売上・経費をまとめて記録できる、農家のためのシンプルな農業日誌アプリです。</p>
           <div class="hero__actions">
             <a class="lp-button lp-button--primary" href="register.php">無料で始める</a>
             <a class="lp-button lp-button--secondary" href="login.php">ログイン</a>
@@ -52,7 +52,7 @@ $pageTitle = 'AGRIMORE | 農業の記録を、もっとかんたんに。';
             <?php endif; ?>
           </div>
         </div>
-        <div class="hero__panel" aria-label="AGRIMOREで記録できる内容">
+        <div class="hero__panel" aria-label="AgriMoreで記録できる内容">
           <div class="hero-card hero-card--main">
             <span class="hero-card__icon">🌱</span>
             <div>
@@ -194,7 +194,7 @@ $pageTitle = 'AGRIMORE | 農業の記録を、もっとかんたんに。';
 
   <footer class="lp-footer">
     <div class="lp-container">
-      <p>© 2026 AGRIMORE</p>
+      <p>© 2026 AgriMore</p>
       <p class="lp-footer__links">
         <a href="guide.php">使い方</a>
         <span aria-hidden="true">/</span>

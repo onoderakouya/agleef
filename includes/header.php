@@ -16,7 +16,7 @@ $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
   <div class="layout nav-wrap">
     <h1 class="brand-heading">
       <a href="<?= e((string)(is_logged_in() ? 'dashboard.php' : 'index.php')) ?>" class="brand">
-        <span class="brand-title">AGRIMORE</span>
+        <span class="brand-title">AgriMore</span>
         <span class="brand-subtitle">農業日誌アプリ</span>
       </a>
     </h1>

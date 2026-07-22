@@ -69,7 +69,7 @@ include __DIR__ . '/includes/header.php';
     <h3>はじめにやること</h3>
     <button type="button" class="btn small" data-onboarding-hide>非表示にする</button>
   </div>
-  <p class="description">AGRIMOREを使い始めるために、まずは以下の順番で登録してみましょう。</p>
+  <p class="description">AgriMoreを使い始めるために、まずは以下の順番で登録してみましょう。</p>
   <div class="onboarding-checklist">
     <?php foreach ($onboardingItems as $item): ?>
       <a class="onboarding-item <?= e((string)($item['done'] ? 'is-complete' : '')) ?>" href="<?= e($item['href']) ?>">
